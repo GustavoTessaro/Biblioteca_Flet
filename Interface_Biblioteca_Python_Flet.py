@@ -142,6 +142,7 @@ def main(page: ft.Page):
         "cliente_edit_id": None,
         "prateleira_edit_id": None,
         "livro_edit_id": None,
+        "mobile": page.width < BREAKPOINT_MOBILE,
     }
     
     #endregion
@@ -790,6 +791,16 @@ def main(page: ft.Page):
             )
         )
         page.update()
+
+    def on_resize(e: ft.PageResizeEvent):
+        novo_mobile = e.width < BREAKPOINT_MOBILE
+
+        if novo_mobile != estado["mobile"]:
+            estado["mobile"] = novo_mobile  
+            route_change()                  
+
+    page.on_resize       = on_resize
+    page.on_route_change = route_change 
 
     route_change()
 
