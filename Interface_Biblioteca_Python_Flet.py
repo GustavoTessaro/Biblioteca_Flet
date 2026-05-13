@@ -834,7 +834,6 @@ def main(page: ft.Page):
         )
         page.update()
 
-
     def on_resize(e: ft.PageResizeEvent):
         # Calcula se mudou para tamanho mobile dinamicamente
         novo_mobile = e.width < BREAKPOINT_MOBILE
@@ -843,8 +842,6 @@ def main(page: ft.Page):
             route_change()
 
     # ==========================================================================
-    # REGISTRO DOS EVENTOS DA PÁGINA E PRIMEIRA EXECUÇÃO
-    # ==========================================================================
     page.on_route_change = route_change
     page.on_resize = on_resize
 
@@ -852,13 +849,10 @@ def main(page: ft.Page):
     if not page.route or page.route == "/":
         page.route = "/"
     
-    # Sincroniza o estado inicial da rota
     estado["rota"] = page.route
 
-    # Executa a montagem da primeira tela do sistema
     route_change()
 
-# Executa o aplicativo Flet na janela nativa do sistema
 if __name__ == "__main__":
     ft.app(target=main)
 
