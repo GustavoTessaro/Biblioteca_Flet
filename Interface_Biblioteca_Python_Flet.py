@@ -413,11 +413,13 @@ def main(page: ft.Page):
                     subtitle=ft.Column([
                         ft.Text(f"Email: {cliente.get('email', 'N/A')}", size=12),
                         ft.Text(f"Telefone: {cliente.get('telefone', 'N/A')}", size=12),
-                    ], spacing=2, tight=True),
+                    ], spacing=4),
                     trailing=ft.Row([
                         criar_botao_primario("", ft.Icons.EDIT, lambda e, cid=cliente["id"]: editar_cliente(cid), bgcolor=ft.Colors.BLUE),
                         criar_botao_primario("", ft.Icons.DELETE, lambda e, cid=cliente["id"]: deletar_cliente(cid), bgcolor=ft.Colors.RED),
-                    ], spacing=5),
+                    ], spacing=5, tight=True),
+                    is_three_line=True,
+                    min_vertical_padding=8,
                 )
             )
 
@@ -512,11 +514,15 @@ def main(page: ft.Page):
             linhas.append(
                 ft.ListTile(
                     title=ft.Text(prateleira["nome"], weight="bold"),
-                    subtitle=ft.Text(f"Prazo: {prateleira['dias_e_prazo']} dias · Multa/dia: R${prateleira['multa_por_dia']:.2f}", size=12),
+                    subtitle=ft.Text(
+                        f"Prazo: {prateleira['dias_e_prazo']} dias · Multa/dia: R${prateleira['multa_por_dia']:.2f}",
+                        size=12,
+                    ),
                     trailing=ft.Row([
                         criar_botao_primario("", ft.Icons.EDIT, lambda e, pid=prateleira["id"]: editar_prateleira(pid), bgcolor=ft.Colors.BLUE),
                         criar_botao_primario("", ft.Icons.DELETE, lambda e, pid=prateleira["id"]: deletar_prateleira(pid), bgcolor=ft.Colors.RED),
-                    ], spacing=5),
+                    ], spacing=5, tight=True),
+                    min_vertical_padding=8,
                 )
             )
 
@@ -613,7 +619,7 @@ def main(page: ft.Page):
                     subtitle=ft.Column([
                         ft.Text(f"Autor: {livro['autor']}", size=12),
                         ft.Text(f"Prateleira: {prateleira['nome'] if prateleira else 'Sem prateleira'}", size=12),
-                    ], spacing=2, tight=True),
+                    ], spacing=2),
                     trailing=ft.Row([
                         ft.Text("Emprestado" if emprestado else "Disponível", color=ft.Colors.RED if emprestado else ft.Colors.GREEN),
                         criar_botao_primario("", ft.Icons.EDIT, lambda e, lid=livro["id"]: editar_livro(lid), bgcolor=ft.Colors.BLUE) if not emprestado else ft.Container(),
@@ -721,7 +727,7 @@ def main(page: ft.Page):
                         ft.Text(f"Status: {emprestimo['status']}", size=12, weight="bold"),
                         ft.Text(f"Emprestado: {emprestimo['data_emprestimo']}", size=11),
                         ft.Text(f"Devolução prevista: {emprestimo['data_entrega']}", size=11),
-                    ], spacing=2, tight=True),
+                    ], spacing=2),
                     trailing=criar_botao_primario("Devolver", ft.Icons.UNDO, lambda e, eid=emprestimo['id']: acionar_devolucao(eid), bgcolor=ft.Colors.ORANGE)
                     if emprestimo["status"] in ["Aberto", "Atrasado"] else ft.Text("Concluído", color=ft.Colors.GREEN),
                 )
@@ -758,7 +764,7 @@ def main(page: ft.Page):
                         ft.Text(f"Livro: {livro['titulo'] if livro else 'Livro removido'}", size=12),
                         ft.Text(f"Multa: R${multa['valor']:.2f}", size=12, weight="bold"),
                         ft.Text(f"Dias de atraso: {multa['dias_atraso']}", size=11),
-                    ], spacing=2, tight=True),
+                    ], spacing=2),
                     trailing=criar_botao_primario("Quitar", ft.Icons.CHECK, lambda e, mid=multa['id']: marcar_multa_paga(mid), bgcolor=ft.Colors.GREEN)
                     if multa["status"] == "Pendente" else ft.Text("Pago", color=ft.Colors.GREEN),
                 )
@@ -997,6 +1003,6 @@ def main(page: ft.Page):
     route_change()
 
 if __name__ == "__main__":
-    ft.app(target=main)
+    ft.app(target=main, view=ft.WEB_BROWSER)
 
 
