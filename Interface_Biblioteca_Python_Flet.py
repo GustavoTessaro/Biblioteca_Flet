@@ -8,6 +8,9 @@ import flet as ft
 DATA_FILE = "biblioteca_data.json"
 BREAKPOINT_MOBILE = 600
 
+_indice_rotas = ["/", "/clientes", "/livros", "/emprestimos", "/multas"]
+
+
 #region Funções
 
 def carregar_dados() -> dict:
@@ -247,7 +250,6 @@ def main(page: ft.Page):
                 shape=ft.RoundedRectangleBorder(radius=8),
             ),
         )
-
 
     def renderizar_menu():
         opcoes = [
@@ -743,6 +745,26 @@ def main(page: ft.Page):
         "/multas": "Histórico de Multas"
     }
 
+    def navigation_bar_mobile():
+        rota_atual = estado["rota"]
+        idx = _indice_rotas.index(rota_atual) if rota_atual in _indice_rotas else 0
+
+        def ao_mudar(e):
+            # Como a sua função navegar agora usa asyncio, chamamos via task
+            asyncio.create_task(navegar(_indice_rotas[e.control.selected_index]))
+
+        return ft.NavigationBar(
+            selected_index=idx,
+            on_change=ao_mudar,
+            destinations=[
+                ft.NavigationBarDestination(icon=ft.Icons.HOME_OUTLINED, selected_icon=ft.Icons.HOME, label="Home"),
+                ft.NavigationBarDestination(icon=ft.Icons.PERSON_OUTLINE, selected_icon=ft.Icons.PERSON, label="Clientes"),
+                ft.NavigationBarDestination(icon=ft.Icons.BOOK_OUTLINED, selected_icon=ft.Icons.BOOK, label="Livros"),
+                ft.NavigationBarDestination(icon=ft.Icons.UNDO_OUTLINED, selected_icon=ft.Icons.UNDO, label="Empréstimos"),
+                ft.NavigationBarDestination(icon=ft.Icons.MONETIZATION_ON_OUTLINED, selected_icon=ft.Icons.MONETIZATION_ON, label="Multas"),
+            ],
+        )
+
     def construir_appbar():
         return ft.AppBar(
             leading=ft.Icon(ft.Icons.MENU_BOOK, color=ft.Colors.WHITE),
@@ -758,7 +780,6 @@ def main(page: ft.Page):
         )
 
     def route_change(e=None):
-
         if e is not None and hasattr(e, "route"):
             estado["rota"] = e.route
 
@@ -775,30 +796,44 @@ def main(page: ft.Page):
         
         view_fn = views_map.get(estado["rota"], view_home)
 
-        conteudo_principal = ft.Column([
-            ft.Container(
-                content=renderizar_menu(),
-                padding=ft.Padding(20, 15, 20, 10),
-            ),
-            ft.Divider(),
-            ft.Container(
+        # ── CONFIGURAÇÃO DE LAYOUT RESPONSIVO ────────────────────────────────
+        # Se for mobile, removemos o menu do topo para não duplicar a navegação
+        if estado["mobile"]:
+            conteudo_principal = ft.Container(
                 content=view_fn(),
-                padding=ft.Padding(20, 0, 20, 20),
+                padding=ft.Padding(20, 10, 20, 10),
                 expand=True
             )
-        ], spacing=0, expand=True)
+        else:
+            # Layout Computador com menu superior
+            conteudo_principal = ft.Column([
+                ft.Container(
+                    content=renderizar_menu(),
+                    padding=ft.Padding(20, 15, 20, 10),
+                ),
+                ft.Divider(),
+                ft.Container(
+                    content=view_fn(),
+                    padding=ft.Padding(20, 0, 20, 20),
+                    expand=True
+                )
+            ], spacing=0, expand=True)
 
+        # Atualiza a pilha de visualização aplicando a barra inferior condicionalmente
         page.views.clear()
         page.views.append(
             ft.View(
                 route=estado["rota"],
                 appbar=construir_appbar(),
                 controls=[conteudo_principal],
+                # Se for mobile, injeta a NavigationBar na propriedade nativa da View
+                navigation_bar=navigation_bar_mobile() if estado["mobile"] else None,
                 padding=0,
                 spacing=0
             )
         )
         page.update()
+
 
     def on_resize(e: ft.PageResizeEvent):
         # Calcula se mudou para tamanho mobile dinamicamente
