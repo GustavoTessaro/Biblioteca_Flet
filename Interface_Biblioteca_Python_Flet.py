@@ -161,11 +161,11 @@ def main(page: ft.Page):
     # TextField para livros
     livro_titulo = ft.TextField(label="Título do livro", hint_text="Ex: Senhor dos Anéis", prefix_icon=ft.Icons.BOOK_OUTLINED, expand=True, border_radius=8)
     livro_autor = ft.TextField(label="Autor", hint_text="Ex: J.R.R. Tolkien", prefix_icon=ft.Icons.CREATE_OUTLINED, expand=True, border_radius=8)
-    livro_prateleira = ft.Dropdown(label="Prateleira", prefix_icon=ft.Icons.LAYERS_OUTLINED, expand=True)
+    livro_prateleira = ft.Dropdown(label="Prateleira", leading_icon=ft.Icons.LAYERS_OUTLINED, expand=True)
 
     # Dropdown para empréstimos
-    emprestimo_cliente = ft.Dropdown(label="Cliente", prefix_icon=ft.Icons.ASSIGNMENT_IND_OUTLINE, expand=True)
-    emprestimo_livro = ft.Dropdown(label="Livro disponível", prefix_icon=ft.Icons.MENU_BOOK_OUTLINED, expand=True)
+    emprestimo_cliente = ft.Dropdown(label="Cliente", leading_icon=ft.Icons.PERSON_OUTLINE, expand=True)
+    emprestimo_livro = ft.Dropdown(label="Livro disponível", leading_icon=ft.Icons.MENU_BOOK_OUTLINED, expand=True)
 
     #endregion
 
@@ -686,32 +686,57 @@ def main(page: ft.Page):
             )
         ], expand=True, padding=20, spacing=20)
 
-    def route_change():
+    def route_change(e=None):
+        # 1. Captura a rota disparada pelo Flet se ela existir
+        if e is not None and hasattr(e, "route"):
+            estado["rota"] = e.route
+
+        # 2. Atualiza os dados dos dropdowns antes de desenhar a tela
         atualizar_dropdowns()
-        page.controls.clear()
-        page.add(
-            ft.Column([
-                ft.Container(
-                    content=ft.Column([
-                        ft.Text("📚 Sistema de Biblioteca", size=24, weight="bold"),
-                        renderizar_menu(),
-                    ], tight=True),
-                    padding=ft.Padding(20, 20, 20, 10),
-                ),
-                ft.Divider(),
-                {"/": view_home,
-                 "/clientes": view_clientes,
-                 "/prateleiras": view_prateleiras,
-                 "/livros": view_livros,
-                 "/emprestimos": view_emprestimos,
-                 "/multas": view_multas}[estado["rota"]](),
-            ], spacing=0)
+
+        # 3. Mapeia as funções das suas telas
+        views_map = {
+            "/": view_home,
+            "/clientes": view_clientes,
+            "/prateleiras": view_prateleiras,
+            "/livros": view_livros,
+            "/emprestimos": view_emprestimos,
+            "/multas": view_multas
+        }
+        
+        # Busca a tela atual. Se não achar, abre a home para não travar o sistema
+        view_fn = views_map.get(estado["rota"], view_home)
+
+        # 4. Estrutura o conteúdo principal da tela
+        conteudo_principal = ft.Column([
+            ft.Container(
+                content=ft.Column([
+                    ft.Text("📚 Sistema de Biblioteca", size=24, weight="bold"),
+                    renderizar_menu(),
+                ], tight=True),
+                padding=ft.Padding(20, 20, 20, 10),
+            ),
+            ft.Divider(),
+            view_fn(), # Chama a função da tela correspondente
+        ], spacing=0)
+
+        # 5. Atualiza a pilha de visualização usando o padrão nativo do Flet
+        page.views.clear()
+        page.views.append(
+            ft.View(
+                route=estado["rota"],
+                controls=[conteudo_principal],
+                padding=0,
+                spacing=0
+            )
         )
+        
+        # Renderiza a interface atualizada
         page.update()
 
     route_change()
 
 
 if __name__ == "__main__":
-    ft.app(target=main)
+    ft.run(main)
 
