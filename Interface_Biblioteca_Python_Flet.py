@@ -155,10 +155,10 @@ def verificar_atrasos_e_multas(dados: dict):
 
     salvar_dados(dados)
 
-def livro_esta_emprestado(livro_id: int, dados: dict) -> bool:
-    return any(
-        emprestimo["livro_id"] == livro_id and emprestimo["status"] in [STATUS_ABERTO, STATUS_ATRASADO]
-        for emprestimo in dados["emprestimos"]
+def livro_esta_emprestado(livro_id: int, dados: dict) -> int:
+    return sum(
+        1 for emprestimo in dados["emprestimos"]
+        if emprestimo["livro_id"] == livro_id and emprestimo["status"] in [STATUS_ABERTO, STATUS_ATRASADO]
     )
 
 def prateleira_tem_livros(prateleira_id: int, dados: dict) -> bool:
@@ -241,11 +241,50 @@ def main(page: ft.Page):
             if not livro_esta_emprestado(livro["id"], dados)
         ]
 
-    def salvar_e_atualizar():
+    def salvar_e_atualizar(msg: str = None):
         salvar_dados(dados)
         verificar_atrasos_e_multas(dados)
         atualizar_dropdowns()
         route_change()
+        if msg:
+            mostrar_snack(msg)
+
+    def cliente_existe(nome: str, email: str, telefone: str, exclude_id: int | None = None) -> bool:
+        nome = nome.strip().lower()
+        email = email.strip().lower()
+        telefone = telefone.strip()
+        return any(
+            c["id"] != exclude_id and (
+                c["nome"].strip().lower() == nome or
+                c["email"].strip().lower() == email or
+                c["telefone"].strip() == telefone
+            )
+            for c in dados["clientes"]
+        )
+
+    def prateleira_existe(nome: str, dias_e_prazo: int, multa_por_dia: float, exclude_id: int | None = None) -> bool:
+        nome = nome.strip().lower()
+        return any(
+            p["id"] != exclude_id and (
+                p["nome"].strip().lower() == nome or
+                (p["dias_e_prazo"] == dias_e_prazo and abs(p["multa_por_dia"] - multa_por_dia) < 1e-9)
+            )
+            for p in dados["prateleiras"]
+        )
+
+    def obter_livro_por_atributos(titulo: str, autor: str, prateleira_id: int, exclude_id: int | None = None) -> dict | None:
+        titulo = titulo.strip().lower()
+        autor = autor.strip().lower()
+        return next(
+            (
+                l for l in dados["livros"]
+                if l["id"] != exclude_id and
+                   l["titulo"].strip().lower() == titulo and
+                   l["autor"].strip().lower() == autor and
+                   l["prateleira_id"] == prateleira_id
+            ),
+            None,
+        )
 
     def navegar(rota: str):
         page.go(rota)
@@ -294,8 +333,8 @@ def main(page: ft.Page):
         return ft.OutlinedButton(  # <── Alterado para OutlinedButton
             content=ft.Row([
                 ft.Icon(icone, size=16),
-                ft.Text(texto, size=14),
-            ], spacing=6, tight=True),
+                ft.Text(texto, size=14) if texto else ft.Container(),
+            ], spacing=6 if texto else 0, tight=True),
             on_click=on_click,
             expand=expand,
             style=ft.ButtonStyle(
@@ -381,8 +420,11 @@ def main(page: ft.Page):
             nome = cliente_nome.value.strip()
             email = cliente_email.value.strip()
             telefone = cliente_telefone.value.strip()
-            if not nome:
-                mostrar_snack("Digite o nome do cliente.", ft.Colors.RED_700)
+            if not nome or not email or not telefone:
+                mostrar_snack("Todos os campos são obrigatórios.", ft.Colors.RED_700)
+                return
+            if cliente_existe(nome, email, telefone):
+                mostrar_snack("Já existe um cliente com nome, e-mail ou telefone iguais.", ft.Colors.RED_700)
                 return
             dados["clientes"].append({
                 "id": proximo_id(dados["clientes"]),
@@ -390,11 +432,8 @@ def main(page: ft.Page):
                 "email": email,
                 "telefone": telefone,
             })
-            cliente_nome.value = ""
-            cliente_email.value = ""
-            cliente_telefone.value = ""
-            salvar_e_atualizar()
-            mostrar_snack("Cliente cadastrado com sucesso.")
+            limpar_form_cliente()
+            salvar_e_atualizar("Cliente cadastrado com sucesso.")
 
         def editar_cliente(cliente_id):
             cliente = obter_por_id(dados["clientes"], cliente_id)
@@ -413,12 +452,20 @@ def main(page: ft.Page):
             if not cliente:
                 limpar_form_cliente()
                 return
-            cliente["nome"] = cliente_nome.value.strip()
-            cliente["email"] = cliente_email.value.strip()
-            cliente["telefone"] = cliente_telefone.value.strip()
+            nome = cliente_nome.value.strip()
+            email = cliente_email.value.strip()
+            telefone = cliente_telefone.value.strip()
+            if not nome or not email or not telefone:
+                mostrar_snack("Todos os campos são obrigatórios.", ft.Colors.RED_700)
+                return
+            if cliente_existe(nome, email, telefone, exclude_id=cliente["id"]):
+                mostrar_snack("Já existe um cliente com nome, e-mail ou telefone iguais.", ft.Colors.RED_700)
+                return
+            cliente["nome"] = nome
+            cliente["email"] = email
+            cliente["telefone"] = telefone
             limpar_form_cliente()
-            salvar_e_atualizar()
-            mostrar_snack("Cliente atualizado.")
+            salvar_e_atualizar("Cliente atualizado.")
 
         def deletar_cliente(cliente_id):
             if cliente_tem_emprestimos_ativos(cliente_id, dados):
@@ -427,14 +474,10 @@ def main(page: ft.Page):
             dados["clientes"][:] = [c for c in dados["clientes"] if c["id"] != cliente_id]
             if cliente_id == estado["cliente_edit_id"]:
                 limpar_form_cliente()
-            salvar_e_atualizar()
-            mostrar_snack("Cliente removido.")
+            salvar_e_atualizar("Cliente removido.")
 
         def cancelar_edit(e):
-            cliente_nome.value = ""
-            cliente_email.value = ""
-            cliente_telefone.value = ""
-            estado["cliente_edit_id"] = None
+            limpar_form_cliente()
             route_change()
 
         btn_salvar = criar_botao_primario(
@@ -486,24 +529,28 @@ def main(page: ft.Page):
         def adicionar_prateleira(e):
             nome = prateleira_nome.value.strip()
             dias = prateleira_dias.value.strip()
+            multa_texto = prateleira_multa.value.strip()
             multa_valor = parse_float(prateleira_multa.value)
-            if not nome or not dias.isdigit() or int(dias) <= 0:
+            if not nome or not dias or not multa_texto:
+                mostrar_snack("Todos os campos são obrigatórios.", ft.Colors.RED_700)
+                return
+            if not dias.isdigit() or int(dias) <= 0:
                 mostrar_snack("Preencha nome e dias de empréstimo válidos.", ft.Colors.RED_700)
                 return
-            if prateleira_multa.value.strip() and multa_valor is None:
+            if multa_valor is None:
                 mostrar_snack("Multa por dia deve ser um número válido.", ft.Colors.RED_700)
+                return
+            if prateleira_existe(nome, int(dias), multa_valor):
+                mostrar_snack("Já existe uma prateleira com esses dados.", ft.Colors.RED_700)
                 return
             dados["prateleiras"].append({
                 "id": proximo_id(dados["prateleiras"]),
                 "nome": nome,
                 "dias_e_prazo": int(dias),
-                "multa_por_dia": multa_valor if multa_valor is not None else 1.0,
+                "multa_por_dia": multa_valor,
             })
-            prateleira_nome.value = ""
-            prateleira_dias.value = ""
-            prateleira_multa.value = ""
-            salvar_e_atualizar()
-            mostrar_snack("Prateleira cadastrada.")
+            limpar_form_prateleira()
+            salvar_e_atualizar("Prateleira cadastrada.")
 
         def editar_prateleira(prateleira_id):
             prateleira = obter_por_id(dados["prateleiras"], prateleira_id)
@@ -522,20 +569,27 @@ def main(page: ft.Page):
             if not prateleira:
                 limpar_form_prateleira()
                 return
+            nome = prateleira_nome.value.strip()
             dias = prateleira_dias.value.strip()
+            multa_texto = prateleira_multa.value.strip()
             multa_valor = parse_float(prateleira_multa.value)
+            if not nome or not dias or not multa_texto:
+                mostrar_snack("Todos os campos são obrigatórios.", ft.Colors.RED_700)
+                return
             if not dias.isdigit() or int(dias) <= 0:
                 mostrar_snack("Dias deve ser um número válido.", ft.Colors.RED_700)
                 return
-            if prateleira_multa.value.strip() and multa_valor is None:
+            if multa_valor is None:
                 mostrar_snack("Multa por dia deve ser um número válido.", ft.Colors.RED_700)
                 return
-            prateleira["nome"] = prateleira_nome.value.strip()
+            if prateleira_existe(nome, int(dias), multa_valor, exclude_id=prateleira["id"]):
+                mostrar_snack("Já existe uma prateleira com esses dados.", ft.Colors.RED_700)
+                return
+            prateleira["nome"] = nome
             prateleira["dias_e_prazo"] = int(dias)
-            prateleira["multa_por_dia"] = multa_valor if multa_valor is not None else 1.0
+            prateleira["multa_por_dia"] = multa_valor
             limpar_form_prateleira()
-            salvar_e_atualizar()
-            mostrar_snack("Prateleira atualizada.")
+            salvar_e_atualizar("Prateleira atualizada.")
 
         def deletar_prateleira(prateleira_id):
             if prateleira_tem_livros(prateleira_id, dados):
@@ -544,14 +598,10 @@ def main(page: ft.Page):
             dados["prateleiras"][:] = [p for p in dados["prateleiras"] if p["id"] != prateleira_id]
             if prateleira_id == estado["prateleira_edit_id"]:
                 limpar_form_prateleira()
-            salvar_e_atualizar()
-            mostrar_snack("Prateleira removida.")
+            salvar_e_atualizar("Prateleira removida.")
 
         def cancelar_edit(e):
-            prateleira_nome.value = ""
-            prateleira_dias.value = ""
-            prateleira_multa.value = ""
-            estado["prateleira_edit_id"] = None
+            limpar_form_prateleira()
             route_change()
 
         btn_salvar = criar_botao_primario(
@@ -604,19 +654,22 @@ def main(page: ft.Page):
             autor = livro_autor.value.strip()
             prateleira_id = int(livro_prateleira.value) if livro_prateleira.value else None
             if not titulo or not autor or prateleira_id is None:
-                mostrar_snack("Preencha título, autor e prateleira.", ft.Colors.RED_700)
+                mostrar_snack("Todos os campos são obrigatórios.", ft.Colors.RED_700)
+                return
+            if livro_existente:
+                livro_existente["quantidade"] = livro_existente.get("quantidade", 1) + 1
+                limpar_form_livro()
+                salvar_e_atualizar(f"Livro existente encontrado. Quantidade atualizada para {livro_existente['quantidade']}.")
                 return
             dados["livros"].append({
                 "id": proximo_id(dados["livros"]),
                 "titulo": titulo,
                 "autor": autor,
                 "prateleira_id": prateleira_id,
+                "quantidade": 1,
             })
-            livro_titulo.value = ""
-            livro_autor.value = ""
-            livro_prateleira.value = None
-            salvar_e_atualizar()
-            mostrar_snack("Livro cadastrado.")
+            limpar_form_livro()
+            salvar_e_atualizar("Livro cadastrado.")
 
         def editar_livro(livro_id):
             livro = obter_por_id(dados["livros"], livro_id)
@@ -635,20 +688,44 @@ def main(page: ft.Page):
             if not livro:
                 limpar_form_livro()
                 return
-            livro["titulo"] = livro_titulo.value.strip()
-            livro["autor"] = livro_autor.value.strip()
-            livro["prateleira_id"] = int(livro_prateleira.value) if livro_prateleira.value else livro["prateleira_id"]
+            titulo = livro_titulo.value.strip()
+            autor = livro_autor.value.strip()
+            prateleira_id = int(livro_prateleira.value) if livro_prateleira.value else None
+            if not titulo or not autor or prateleira_id is None:
+                mostrar_snack("Todos os campos são obrigatórios.", ft.Colors.RED_700)
+                return
+            if obter_livro_por_atributos(titulo, autor, prateleira_id, exclude_id=livro["id"]):
+                mostrar_snack("Já existe um livro com esses dados.", ft.Colors.RED_700)
+                return
+            livro["titulo"] = titulo
+            livro["autor"] = autor
+            livro["prateleira_id"] = prateleira_id
             limpar_form_livro()
-            salvar_e_atualizar()
-            mostrar_snack("Livro atualizado.")
+            salvar_e_atualizar("Livro atualizado.")
 
         def deletar_livro(livro_id):
-            if livro_esta_emprestado(livro_id, dados):
+            if livro_esta_emprestado(livro_id, dados) > 0:
                 mostrar_snack("Não pode deletar livro que está emprestado.", ft.Colors.RED_700)
                 return
             dados["livros"][:] = [l for l in dados["livros"] if l["id"] != livro_id]
-            salvar_e_atualizar()
-            mostrar_snack("Livro removido.")
+            if livro_id == estado["livro_edit_id"]:
+                limpar_form_livro()
+            salvar_e_atualizar("Livro removido.")
+
+        def aumentar_quantidade(livro_id):
+            livro = obter_por_id(dados["livros"], livro_id)
+            if livro:
+                livro["quantidade"] = livro.get("quantidade", 1) + 1
+                salvar_e_atualizar(f"Quantidade atualizada: {livro['quantidade']}")
+
+        def diminuir_quantidade(livro_id):
+            livro = obter_por_id(dados["livros"], livro_id)
+            if livro:
+                if livro.get("quantidade", 1) <= 1:
+                    mostrar_snack("Quantidade mínima é 1. Use excluir para remover o livro.", ft.Colors.RED_700)
+                    return
+                livro["quantidade"] -= 1
+                salvar_e_atualizar(f"Quantidade atualizada: {livro['quantidade']}")
 
         def cancelar_edit(e):
             limpar_form_livro()
@@ -656,7 +733,7 @@ def main(page: ft.Page):
 
         # Otimização: O botão de salvar só ativa a função se houver algo sendo editado
         btn_salvar = criar_botao_primario(
-            "Salvar",
+            "Editar",
             ft.Icons.SAVE,
             salvar_livro_edit if estado["livro_edit_id"] else None,
             bgcolor=ft.Colors.ORANGE if estado["livro_edit_id"] else ft.Colors.GREY
@@ -664,7 +741,9 @@ def main(page: ft.Page):
 
         linhas = []
         for livro in dados["livros"]:
-            emprestado = livro_esta_emprestado(livro["id"], dados)
+            emprestimos_abertos = livro_esta_emprestado(livro["id"], dados)
+            quantidade = livro.get("quantidade", 1)
+            emprestado = emprestimos_abertos >= quantidade
             prateleira = obter_por_id(dados["prateleiras"], livro["prateleira_id"])
             linhas.append(
                 ft.ListTile(
@@ -674,7 +753,10 @@ def main(page: ft.Page):
                         ft.Text(f"Prateleira: {prateleira['nome'] if prateleira else 'Sem prateleira'}", size=12),
                     ], spacing=2),
                     trailing=ft.Row([
-                        ft.Text("Emprestado" if emprestado else "Disponível", color=ft.Colors.RED if emprestado else ft.Colors.GREEN),
+                        ft.Text(f"Qty: {quantidade} (Disp: {quantidade - emprestimos_abertos})", size=12),
+                        ft.Text("Disponível" if emprestimos_abertos < quantidade else "Emprestado", color=ft.Colors.GREEN if emprestimos_abertos < quantidade else ft.Colors.RED),
+                        criar_botao_primario("", ft.Icons.ADD, lambda e, lid=livro["id"]: aumentar_quantidade(lid), bgcolor=ft.Colors.BLUE),
+                        criar_botao_primario("", ft.Icons.REMOVE, lambda e, lid=livro["id"]: diminuir_quantidade(lid), bgcolor=ft.Colors.GREY),
                         criar_botao_primario("", ft.Icons.EDIT, lambda e, lid=livro["id"]: editar_livro(lid), bgcolor=ft.Colors.BLUE) if not emprestado else ft.Container(),
                         criar_botao_primario("", ft.Icons.DELETE, lambda e, lid=livro["id"]: deletar_livro(lid), bgcolor=ft.Colors.RED) if not emprestado else ft.Container(),
                     ], spacing=5, tight=True), # ── ADICIONADO: tight=True evita bugs de tamanho na linha de ações
@@ -710,6 +792,11 @@ def main(page: ft.Page):
             if not livro or not prateleira:
                 mostrar_snack("Livro ou prateleira inválidos.", ft.Colors.RED_700)
                 return
+            emprestimos_abertos = livro_esta_emprestado(livro_id, dados)
+            quantidade = livro.get("quantidade", 1)
+            if emprestimos_abertos >= quantidade:
+                mostrar_snack("Não há cópias disponíveis deste livro.", ft.Colors.RED_700)
+                return
 
             hoje = date.today()
             dados["emprestimos"].append({
@@ -722,8 +809,7 @@ def main(page: ft.Page):
             })
             emprestimo_cliente.value = None
             emprestimo_livro.value = None
-            salvar_e_atualizar()
-            mostrar_snack("Empréstimo cadastrado.")
+            salvar_e_atualizar("Empréstimo cadastrado.")
 
         def acionar_devolucao(emprestimo_id):
             emprestimo = obter_por_id(dados["emprestimos"], emprestimo_id)
@@ -768,8 +854,7 @@ def main(page: ft.Page):
                 if dlg:
                     dlg.open = False
                 
-                salvar_e_atualizar()
-                mostrar_snack("Devolução registrada com sucesso.")
+                salvar_e_atualizar("Devolução registrada com sucesso.")
 
         linhas = []
         for emprestimo in dados["emprestimos"]:
