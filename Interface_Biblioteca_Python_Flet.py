@@ -509,6 +509,8 @@ def main(page: ft.Page):
 
         linhas = []
         for cliente in dados["clientes"]:
+            async def on_delete_cliente(e, cid=cliente["id"]):
+                await deletar_cliente(cid)
             linhas.append(
                 ft.ListTile(
                     title=ft.Text(cliente["nome"], weight="bold"),
@@ -518,7 +520,7 @@ def main(page: ft.Page):
                     ], spacing=4),
                     trailing=ft.Row([
                         criar_botao_primario("", ft.Icons.EDIT, lambda e, cid=cliente["id"]: editar_cliente(cid), bgcolor=ft.Colors.BLUE),
-                        criar_botao_primario( "", ft.Icons.DELETE, lambda e, cid=cliente["id"]: asyncio.create_task(deletar_cliente(cid)), bgcolor=ft.Colors.RED),
+                        criar_botao_primario("", ft.Icons.DELETE, on_delete_cliente, bgcolor=ft.Colors.RED),
                     ], spacing=5, tight=True),
                     is_three_line=True,
                     min_vertical_padding=8,
@@ -633,6 +635,8 @@ def main(page: ft.Page):
 
         linhas = []
         for prateleira in dados["prateleiras"]:
+            async def on_delete_prateleira(e, pid=prateleira["id"]):
+                await deletar_prateleira(pid)
             linhas.append(
                 ft.ListTile(
                     title=ft.Text(prateleira["nome"], weight="bold"),
@@ -642,7 +646,7 @@ def main(page: ft.Page):
                     ),
                     trailing=ft.Row([
                         criar_botao_primario("", ft.Icons.EDIT, lambda e, pid=prateleira["id"]: editar_prateleira(pid), bgcolor=ft.Colors.BLUE),
-                        criar_botao_primario("", ft.Icons.DELETE, lambda e, pid=prateleira["id"]: asyncio.create_task(deletar_prateleira(pid)), bgcolor=ft.Colors.RED),
+                        criar_botao_primario("", ft.Icons.DELETE, on_delete_prateleira, bgcolor=ft.Colors.RED),
                     ], spacing=5, tight=True),
                     min_vertical_padding=8,
                 )
@@ -761,6 +765,8 @@ def main(page: ft.Page):
 
         linhas = []
         for livro in dados["livros"]:
+            async def on_delete_livro(e, lid=livro["id"]):
+                await deletar_livro(lid)
             emprestimos_abertos = livro_esta_emprestado(livro["id"], dados)
             quantidade = livro.get("quantidade", 1)
             emprestado = emprestimos_abertos >= quantidade
@@ -778,7 +784,7 @@ def main(page: ft.Page):
                         criar_botao_primario("", ft.Icons.ADD, lambda e, lid=livro["id"]: aumentar_quantidade(lid), bgcolor=ft.Colors.BLUE),
                         criar_botao_primario("", ft.Icons.REMOVE, lambda e, lid=livro["id"]: diminuir_quantidade(lid), bgcolor=ft.Colors.GREY),
                         criar_botao_primario("", ft.Icons.EDIT, lambda e, lid=livro["id"]: editar_livro(lid), bgcolor=ft.Colors.BLUE),
-                        criar_botao_primario("", ft.Icons.DELETE, lambda e, lid=livro["id"]: asyncio.create_task(deletar_livro(lid)), bgcolor=ft.Colors.RED) if not emprestado else ft.Container(),
+                        criar_botao_primario("", ft.Icons.DELETE, on_delete_livro, bgcolor=ft.Colors.RED) if not emprestado else ft.Container(),
                     ], spacing=5, tight=True), # ── ADICIONADO: tight=True evita bugs de tamanho na linha de ações
                 )
             )
