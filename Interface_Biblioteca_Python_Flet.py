@@ -197,49 +197,78 @@ def main(page: ft.Page):
         route_change()
 
     def navegar(rota: str):
-        estado["rota"] = rota
-        route_change()
+        page.go(rota)
 
-    def criar_card(titulo: str, conteudo: ft.Control) -> ft.Container:
+    def criar_card(titulo: str, conteudo: ft.Control, cor_borda=ft.Colors.GREY_300) -> ft.Container:
         return ft.Container(
-            content=ft.Column([ft.Text(titulo, size=13, weight="bold"), conteudo], spacing=10, tight=True),
-            padding=16,
-            bgcolor=ft.Colors.WHITE,
-            border=ft.Border.all(1, ft.Colors.GREY_300),
-            border_radius=12,
-            shadow=ft.BoxShadow(color=ft.Colors.GREY_300, blur_radius=10, offset=ft.Offset(0, 2)),
-        )
+        content=ft.Column([
+            ft.Text(titulo, size=13, weight="bold"),
+            conteudo,
+        ], spacing=10, tight=True),
+        padding=16,
+        bgcolor=ft.Colors.WHITE, # Se não usar paleta, mantém fixo por enquanto
+        border=ft.Border.all(1, cor_borda),
+        border_radius=12,
+        shadow=ft.BoxShadow(
+            blur_radius=8,
+            spread_radius=0,
+            color=ft.Colors.GREY_300,
+            offset=ft.Offset(0, 2),
+        ),
+    )
 
-    def criar_botao(texto: str, on_click, cor=ft.Colors.BLUE, tamanho=14):
+    def criar_botao_primario(texto: str, icone, on_click, expand=False, bgcolor=ft.Colors.BLUE_700, color=ft.Colors.WHITE):
         return ft.ElevatedButton(
-            content=ft.Text(texto, size=tamanho),
-            on_click=on_click,
-            bgcolor=cor,
-            color=ft.Colors.WHITE,
-        )
+        content=ft.Row([
+            ft.Icon(icone, size=16),
+            ft.Text(texto, size=14),
+        ], spacing=6, tight=True),
+        on_click=on_click,
+        expand=expand,
+        bgcolor=bgcolor,
+        color=color,
+        style=ft.ButtonStyle(
+            shape=ft.RoundedRectangleBorder(radius=8),
+        ),
+    )
+        
+    def criar_botao_secundario(texto: str, icone, on_click, expand=False, color=ft.Colors.BLUE_700):
+        return ft.OutlinedButton(
+        content=ft.Row([
+            ft.Icon(icone, size=16),
+            ft.Text(texto, size=14),
+        ], spacing=6, tight=True),
+        on_click=on_click,
+        expand=expand,
+        style=ft.ButtonStyle(
+            shape=ft.RoundedRectangleBorder(radius=8),
+            color=color,
+        ),
+    )
 
     def renderizar_menu():
         opcoes = [
-            ("/", "Home"),
-            ("/clientes", "Clientes"),
-            ("/prateleiras", "Prateleiras"),
-            ("/livros", "Livros"),
-            ("/emprestimos", "Empréstimos"),
-            ("/multas", "Multas"),
+        ("/", "Home"),
+        ("/clientes", "Clientes"),
+        ("/prateleiras", "Prateleiras"),
+        ("/livros", "Livros"),
+        ("/emprestimos", "Empréstimos"),
+        ("/multas", "Multas"),
         ]
         itens = []
         for rota, label in opcoes:
-            ativo = rota == estado["rota"]
+            ativo = rota == page.route 
             itens.append(
-                ft.TextButton(
-                    content=ft.Text(label),
-                    on_click=lambda e, dest=rota: navegar(dest),
-                    style=ft.ButtonStyle(
-                        color=ft.Colors.WHITE if ativo else ft.Colors.BLACK,
-                        bgcolor=ft.Colors.BLUE_700 if ativo else ft.Colors.BLUE_50,
-                    ),
-                )
+            ft.TextButton(
+                content=ft.Text(label),
+                on_click=lambda e, dest=rota: navegar(dest),
+                style=ft.ButtonStyle(
+                    color=ft.Colors.WHITE if ativo else ft.Colors.BLUE_700,
+                    bgcolor=ft.Colors.BLUE_700 if ativo else ft.Colors.BLUE_50,
+                    shape=ft.RoundedRectangleBorder(radius=8),
+                ),
             )
+        )
         return ft.Row(itens, wrap=True, spacing=10)
 
     def view_home():
@@ -325,11 +354,11 @@ def main(page: ft.Page):
             estado["cliente_edit_id"] = None
             page.update()
 
-        btn_salvar = criar_botao(
-            "Salvar Se Editando",
+        btn_salvar = criar_botao_primario(
+            "Salvar",
+            ft.Icons.SAVE,
             salvar_cliente_edit,
-            ft.Colors.ORANGE if estado["cliente_edit_id"] else ft.Colors.GREY,
-            13
+            bgcolor=ft.Colors.ORANGE if estado["cliente_edit_id"] else ft.Colors.GREY
         )
 
         linhas = []
@@ -342,8 +371,8 @@ def main(page: ft.Page):
                         ft.Text(f"Telefone: {cliente.get('telefone', 'N/A')}", size=12),
                     ], spacing=2, tight=True),
                     trailing=ft.Row([
-                        criar_botao("✏️", lambda e, cid=cliente["id"]: editar_cliente(cid), ft.Colors.BLUE, 11),
-                        criar_botao("🗑️", lambda e, cid=cliente["id"]: deletar_cliente(cid), ft.Colors.RED, 11),
+                        criar_botao_primario("", ft.Icons.EDIT, lambda e, cid=cliente["id"]: editar_cliente(cid), bgcolor=ft.Colors.BLUE),
+                        criar_botao_primario("", ft.Icons.DELETE, lambda e, cid=cliente["id"]: deletar_cliente(cid), bgcolor=ft.Colors.RED),
                     ], spacing=5),
                 )
             )
@@ -353,9 +382,9 @@ def main(page: ft.Page):
                 cliente_nome,
                 cliente_email,
                 cliente_telefone,
-                criar_botao("Cadastrar", adicionar_cliente, ft.Colors.GREEN, 12),
+                criar_botao_primario("Cadastrar", ft.Icons.ADD, adicionar_cliente, bgcolor=ft.Colors.GREEN),
             ], spacing=10),
-            ft.Row([btn_salvar, criar_botao("Cancelar", cancelar_edit, ft.Colors.GREY, 12)], spacing=10),
+            ft.Row([btn_salvar, criar_botao_secundario("Cancelar", ft.Icons.CANCEL, cancelar_edit, color=ft.Colors.GREY)], spacing=10),
             ft.Divider(),
             ft.Text("Clientes cadastrados", weight="bold"),
             *linhas,
@@ -426,11 +455,11 @@ def main(page: ft.Page):
             estado["prateleira_edit_id"] = None
             page.update()
 
-        btn_salvar = criar_botao(
-            "Salvar Se Editando",
+        btn_salvar = criar_botao_primario(
+            "Salvar",
+            ft.Icons.SAVE,
             salvar_prateleira_edit,
-            ft.Colors.ORANGE if estado["prateleira_edit_id"] else ft.Colors.GREY,
-            13
+            bgcolor=ft.Colors.ORANGE if estado["prateleira_edit_id"] else ft.Colors.GREY
         )
 
         linhas = []
@@ -440,8 +469,8 @@ def main(page: ft.Page):
                     title=ft.Text(prateleira["nome"], weight="bold"),
                     subtitle=ft.Text(f"Prazo: {prateleira['dias_e_prazo']} dias · Multa/dia: R${prateleira['multa_por_dia']:.2f}", size=12),
                     trailing=ft.Row([
-                        criar_botao("✏️", lambda e, pid=prateleira["id"]: editar_prateleira(pid), ft.Colors.BLUE, 11),
-                        criar_botao("🗑️", lambda e, pid=prateleira["id"]: deletar_prateleira(pid), ft.Colors.RED, 11),
+                        criar_botao_primario("", ft.Icons.EDIT, lambda e, pid=prateleira["id"]: editar_prateleira(pid), bgcolor=ft.Colors.BLUE),
+                        criar_botao_primario("", ft.Icons.DELETE, lambda e, pid=prateleira["id"]: deletar_prateleira(pid), bgcolor=ft.Colors.RED),
                     ], spacing=5),
                 )
             )
@@ -451,9 +480,9 @@ def main(page: ft.Page):
                 prateleira_nome,
                 prateleira_dias,
                 prateleira_multa,
-                criar_botao("Cadastrar", adicionar_prateleira, ft.Colors.GREEN, 12),
+                criar_botao_primario("Cadastrar", ft.Icons.ADD, adicionar_prateleira, bgcolor=ft.Colors.GREEN),
             ], spacing=10),
-            ft.Row([btn_salvar, criar_botao("Cancelar", cancelar_edit, ft.Colors.GREY, 12)], spacing=10),
+            ft.Row([btn_salvar, criar_botao_secundario("Cancelar", ft.Icons.CANCEL, cancelar_edit, color=ft.Colors.GREY)], spacing=10),
             ft.Divider(),
             ft.Text("Prateleiras cadastradas", weight="bold"),
             *linhas,
@@ -520,11 +549,11 @@ def main(page: ft.Page):
             estado["livro_edit_id"] = None
             page.update()
 
-        btn_salvar = criar_botao(
-            "Salvar Se Editando",
+        btn_salvar = criar_botao_primario(
+            "Salvar",
+            ft.Icons.SAVE,
             salvar_livro_edit,
-            ft.Colors.ORANGE if estado["livro_edit_id"] else ft.Colors.GREY,
-            13
+            bgcolor=ft.Colors.ORANGE if estado["livro_edit_id"] else ft.Colors.GREY
         )
 
         linhas = []
@@ -540,8 +569,8 @@ def main(page: ft.Page):
                     ], spacing=2, tight=True),
                     trailing=ft.Row([
                         ft.Text("Emprestado" if emprestado else "Disponível", color=ft.Colors.RED if emprestado else ft.Colors.GREEN),
-                        criar_botao("✏️", lambda e, lid=livro["id"]: editar_livro(lid), ft.Colors.BLUE, 11) if not emprestado else ft.Container(),
-                        criar_botao("🗑️", lambda e, lid=livro["id"]: deletar_livro(lid), ft.Colors.RED, 11) if not emprestado else ft.Container(),
+                        criar_botao_primario("", ft.Icons.EDIT, lambda e, lid=livro["id"]: editar_livro(lid), bgcolor=ft.Colors.BLUE) if not emprestado else ft.Container(),
+                        criar_botao_primario("", ft.Icons.DELETE, lambda e, lid=livro["id"]: deletar_livro(lid), bgcolor=ft.Colors.RED) if not emprestado else ft.Container(),
                     ], spacing=5),
                 )
             )
@@ -551,9 +580,9 @@ def main(page: ft.Page):
                 livro_titulo,
                 livro_autor,
                 livro_prateleira,
-                criar_botao("Cadastrar", adicionar_livro, ft.Colors.GREEN, 12),
+                criar_botao_primario("Cadastrar", ft.Icons.ADD, adicionar_livro, bgcolor=ft.Colors.GREEN),
             ], spacing=10),
-            ft.Row([btn_salvar, criar_botao("Cancelar", cancelar_edit, ft.Colors.GREY, 12)], spacing=10),
+            ft.Row([btn_salvar, criar_botao_secundario("Cancelar", ft.Icons.CANCEL, cancelar_edit, color=ft.Colors.GREY)], spacing=10),
             ft.Divider(),
             ft.Text("Livros cadastrados", weight="bold"),
             *linhas,
@@ -634,7 +663,7 @@ def main(page: ft.Page):
                         ft.Text(f"Emprestado: {emprestimo['data_emprestimo']}", size=11),
                         ft.Text(f"Devolução prevista: {emprestimo['data_entrega']}", size=11),
                     ], spacing=2, tight=True),
-                    trailing=criar_botao("Devolver", lambda e, eid=emprestimo['id']: acionar_devolucao(eid), ft.Colors.ORANGE, 11)
+                    trailing=criar_botao_primario("Devolver", ft.Icons.UNDO, lambda e, eid=emprestimo['id']: acionar_devolucao(eid), bgcolor=ft.Colors.ORANGE)
                     if emprestimo["status"] in ["Aberto", "Atrasado"] else ft.Text("Concluído", color=ft.Colors.GREEN),
                 )
             )
@@ -643,7 +672,7 @@ def main(page: ft.Page):
             ft.Row([
                 emprestimo_cliente,
                 emprestimo_livro,
-                criar_botao("Cadastrar", cadastrar_emprestimo, ft.Colors.GREEN, 12),
+                criar_botao_primario("Cadastrar", ft.Icons.ADD, cadastrar_emprestimo, bgcolor=ft.Colors.GREEN),
             ], spacing=10),
             ft.Divider(),
             ft.Text("Empréstimos", weight="bold"),
@@ -671,7 +700,7 @@ def main(page: ft.Page):
                         ft.Text(f"Multa: R${multa['valor']:.2f}", size=12, weight="bold"),
                         ft.Text(f"Dias de atraso: {multa['dias_atraso']}", size=11),
                     ], spacing=2, tight=True),
-                    trailing=criar_botao("Quitar", lambda e, mid=multa['id']: marcar_multa_paga(mid), ft.Colors.GREEN, 11)
+                    trailing=criar_botao_primario("Quitar", ft.Icons.CHECK, lambda e, mid=multa['id']: marcar_multa_paga(mid), bgcolor=ft.Colors.GREEN)
                     if multa["status"] == "Pendente" else ft.Text("Pago", color=ft.Colors.GREEN),
                 )
             )
@@ -685,6 +714,34 @@ def main(page: ft.Page):
                 spacing=12
             )
         ], expand=True, padding=20, spacing=20)
+
+    titulos_paginas = {
+        "/": "Início - Painel Geral",
+        "/clientes": "Gerenciar Clientes",
+        "/prateleiras": "Gerenciar Prateleiras",
+        "/livros": "Catálogo de Livros",
+        "/emprestimos": "Controle de Empréstimos",
+        "/multas": "Histórico de Multas"
+    }
+
+    def construir_appbar():
+        return ft.AppBar(
+            # Ícone de livraria/painel no canto esquerdo
+            leading=ft.Icon(ft.Icons.MENU_BOOK, color=ft.Colors.WHITE),
+            leading_width=48,
+            
+            # Título dinâmico baseado na rota atual
+            title=ft.Text(
+                titulos_paginas.get(estado["rota"], "Sistema de Biblioteca"),
+                color=ft.Colors.WHITE,
+                size=18,
+                weight="bold",
+            ),
+            
+            # Cor azul fixa (combina com o tema padrão que você definiu)
+            bgcolor=ft.Colors.BLUE_700,
+            center_title=False,
+        )
 
     def route_change(e=None):
         # 1. Captura a rota disparada pelo Flet se ela existir
@@ -710,28 +767,28 @@ def main(page: ft.Page):
         # 4. Estrutura o conteúdo principal da tela
         conteudo_principal = ft.Column([
             ft.Container(
-                content=ft.Column([
-                    ft.Text("📚 Sistema de Biblioteca", size=24, weight="bold"),
-                    renderizar_menu(),
-                ], tight=True),
-                padding=ft.Padding(20, 20, 20, 10),
+                content=renderizar_menu(), # Apenas o menu limpo no topo
+                padding=ft.Padding(20, 15, 20, 10),
             ),
             ft.Divider(),
-            view_fn(), # Chama a função da tela correspondente
-        ], spacing=0)
+            ft.Container(
+                content=view_fn(), # Carrega a view correspondente
+                padding=ft.Padding(20, 0, 20, 20), # Margem interna para as tabelas/cards
+                expand=True
+            )
+        ], spacing=0, expand=True)
 
         # 5. Atualiza a pilha de visualização usando o padrão nativo do Flet
         page.views.clear()
         page.views.append(
             ft.View(
                 route=estado["rota"],
+                appbar=construir_appbar(),  # <── ADICIONADO AQUI
                 controls=[conteudo_principal],
                 padding=0,
                 spacing=0
             )
         )
-        
-        # Renderiza a interface atualizada
         page.update()
 
     route_change()
