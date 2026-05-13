@@ -10,6 +10,46 @@ BREAKPOINT_MOBILE = 600
 
 _indice_rotas = ["/", "/clientes", "/livros", "/emprestimos", "/multas"]
 
+def paleta(dark: bool) -> dict:
+
+    if dark:
+        return {
+            "bg_page": ft.Colors.GREY_900,
+            "bg_card": ft.Colors.GREY_800,
+            "bg_sidebar": ft.Colors.GREY_900,
+
+            "txt": ft.Colors.WHITE,
+            "txt_sec": ft.Colors.GREY_400,
+
+            "primary": ft.Colors.BLUE_300,
+            "danger": ft.Colors.RED_300,
+            "success": ft.Colors.GREEN_300,
+
+            "border": ft.Colors.GREY_700,
+
+            "menu_active": ft.Colors.BLUE_800,
+
+            "shadow": ft.Colors.with_opacity(0.25, ft.Colors.BLACK),
+        }
+
+    return {
+        "bg_page": ft.Colors.WHITE,
+        "bg_card": ft.Colors.WHITE,
+        "bg_sidebar": ft.Colors.GREY_50,
+
+        "txt": ft.Colors.BLACK,
+        "txt_sec": ft.Colors.GREY_700,
+
+        "primary": ft.Colors.BLUE_700,
+        "danger": ft.Colors.RED_700,
+        "success": ft.Colors.GREEN_700,
+
+        "border": ft.Colors.GREY_300,
+
+        "menu_active": ft.Colors.BLUE_50,
+
+        "shadow": ft.Colors.with_opacity(0.07, ft.Colors.BLACK),
+    }
 
 #region Funções
 
@@ -147,6 +187,7 @@ def main(page: ft.Page):
         "prateleira_edit_id": None,
         "livro_edit_id": None,
         "mobile": page.width < BREAKPOINT_MOBILE,
+        "dark_mode": False,
     }
     
     #endregion
@@ -204,20 +245,25 @@ def main(page: ft.Page):
     def navegar(rota: str):
         page.go(rota)
 
-    def criar_card(titulo: str, conteudo: ft.Control, cor_borda=ft.Colors.GREY_300) -> ft.Container:
+    def criar_card(titulo: str, conteudo: ft.Control, p: dict):
+
         return ft.Container(
         content=ft.Column([
-            ft.Text(titulo, size=13, weight="bold"),
+            ft.Text(
+                titulo,
+                size=13,
+                weight="bold",
+                color=p["txt"]
+            ),
             conteudo,
-        ], spacing=10, tight=True),
+        ]),
         padding=16,
-        bgcolor=ft.Colors.WHITE, # Se não usar paleta, mantém fixo por enquanto
-        border=ft.Border.all(1, cor_borda),
+        bgcolor=p["bg_card"],
+        border=ft.Border.all(1, p["border"]),
         border_radius=12,
         shadow=ft.BoxShadow(
             blur_radius=8,
-            spread_radius=0,
-            color=ft.Colors.GREY_300,
+            color=p["shadow"],
             offset=ft.Offset(0, 2),
         ),
     )
@@ -811,7 +857,17 @@ def main(page: ft.Page):
             ], spacing=4, tight=True),
         )
 
+    def toggle_theme():
 
+        estado["dark_mode"] = not estado["dark_mode"]
+
+        page.theme_mode = (
+        ft.ThemeMode.DARK
+        if estado["dark_mode"]
+        else ft.ThemeMode.LIGHT
+        )
+
+        route_change()
 
     def navigation_bar_mobile():
         rota_atual = estado["rota"]
@@ -834,20 +890,51 @@ def main(page: ft.Page):
         )
 
     def construir_appbar():
+
+        p = paleta(estado["dark_mode"])
+
         return ft.AppBar(
-            leading=ft.Icon(ft.Icons.MENU_BOOK, color=ft.Colors.WHITE),
+            leading=ft.Icon(
+                ft.Icons.MENU_BOOK,
+                color=p["txt"]
+            ),
+
             leading_width=48,
+
             title=ft.Text(
-                titulos_paginas.get(estado["rota"], "Sistema de Biblioteca"),
-                color=ft.Colors.WHITE,
+                titulos_paginas.get(
+                    estado["rota"],
+                    "Sistema de Biblioteca"
+                ),
+                color=p["txt"],
                 size=18,
                 weight="bold",
             ),
-            bgcolor=ft.Colors.BLUE_700,
+
+            bgcolor=p["primary"],
+
             center_title=False,
+
+            actions=[
+                ft.IconButton(
+                    icon=(
+                        ft.Icons.DARK_MODE
+                        if estado["dark_mode"]
+                        else ft.Icons.LIGHT_MODE
+                    ),
+
+                    icon_color=ft.Colors.WHITE,
+
+                    tooltip="Alternar tema",
+
+                    on_click=lambda e: toggle_theme(),
+                )
+            ]
         )
 
     def route_change(e=None):
+        p = paleta(estado["dark_mode"])
+        
         if e is not None and hasattr(e, "route"):
             estado["rota"] = e.route
 
@@ -907,11 +994,9 @@ def main(page: ft.Page):
             estado["mobile"] = novo_mobile
             route_change()
 
-    # ==========================================================================
     page.on_route_change = route_change
     page.on_resize = on_resize
 
-    # Define a rota inicial explicitamente se o app abrir limpo
     if not page.route or page.route == "/":
         page.route = "/"
     
