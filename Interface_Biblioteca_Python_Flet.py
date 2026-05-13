@@ -222,7 +222,9 @@ def main(page: ft.Page):
 
     def mostrar_snack(msg: str, cor=ft.Colors.GREEN_700):
         snackbar = ft.SnackBar(content=ft.Text(msg, color=ft.Colors.WHITE), bgcolor=cor, duration=2500)
+        snackbar.open = True
         page.snack_bar = snackbar
+        page.update()
         snackbar.open = True
         page.update()
 
@@ -757,7 +759,7 @@ def main(page: ft.Page):
                         ft.Text("Disponível" if emprestimos_abertos < quantidade else "Emprestado", color=ft.Colors.GREEN if emprestimos_abertos < quantidade else ft.Colors.RED),
                         criar_botao_primario("", ft.Icons.ADD, lambda e, lid=livro["id"]: aumentar_quantidade(lid), bgcolor=ft.Colors.BLUE),
                         criar_botao_primario("", ft.Icons.REMOVE, lambda e, lid=livro["id"]: diminuir_quantidade(lid), bgcolor=ft.Colors.GREY),
-                        criar_botao_primario("", ft.Icons.EDIT, lambda e, lid=livro["id"]: editar_livro(lid), bgcolor=ft.Colors.BLUE) if not emprestado else ft.Container(),
+                        criar_botao_primario("", ft.Icons.EDIT, lambda e, lid=livro["id"]: editar_livro(lid), bgcolor=ft.Colors.BLUE),
                         criar_botao_primario("", ft.Icons.DELETE, lambda e, lid=livro["id"]: deletar_livro(lid), bgcolor=ft.Colors.RED) if not emprestado else ft.Container(),
                     ], spacing=5, tight=True), # ── ADICIONADO: tight=True evita bugs de tamanho na linha de ações
                 )
