@@ -146,6 +146,8 @@ def main(page: ft.Page):
     
     #endregion
 
+    #region TextFields e Dropdowns
+
     # TextField para clientes
     cliente_nome = ft.TextField(label="Nome do cliente", hint_text="Ex: João Alberto",  prefix_icon=ft.Icons.PERSON_OUTLINE, expand=True, border_radius=8)
     cliente_email = ft.TextField(label="E-mail do cliente", hint_text="Ex: joao@email.com", prefix_icon=ft.Icons.EMAIL_OUTLINED, expand=True, border_radius=8, keyboard_type=ft.KeyboardType.EMAIL)
@@ -165,9 +167,11 @@ def main(page: ft.Page):
     emprestimo_cliente = ft.Dropdown(label="Cliente", prefix_icon=ft.Icons.ASSIGNMENT_IND_OUTLINE, expand=True)
     emprestimo_livro = ft.Dropdown(label="Livro disponível", prefix_icon=ft.Icons.MENU_BOOK_OUTLINED, expand=True)
 
+    #endregion
+
     def mostrar_snack(msg: str, cor=ft.Colors.GREEN_700):
         snackbar = ft.SnackBar(content=ft.Text(msg, color=ft.Colors.WHITE), bgcolor=cor, duration=2500)
-        page.snack_bar = snackbar
+        page.overlay.append(snackbar)
         snackbar.open = True
         page.update()
 
