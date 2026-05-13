@@ -6,3 +6,10 @@ estado = {
     }
 
     verificar o telefone do cliente TXfield se tem como digitar apenas numeros e formatar igual ao email
+
+            btn_salvar = criar_botao_primario(
+            "Salvar",
+            ft.Icons.SAVE,
+            salvar_prateleira_edit if estado["prateleira_edit_id"] else None, # Se não estiver editando, o botão fica desabilitado
+            bgcolor=ft.Colors.ORANGE if estado["prateleira_edit_id"] else ft.Colors.GREY
+        )

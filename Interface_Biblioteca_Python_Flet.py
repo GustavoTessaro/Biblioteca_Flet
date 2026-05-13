@@ -1,5 +1,6 @@
 import json
 import os
+import asyncio
 from datetime import date, timedelta
 
 import flet as ft
@@ -219,33 +220,34 @@ def main(page: ft.Page):
     )
 
     def criar_botao_primario(texto: str, icone, on_click, expand=False, bgcolor=ft.Colors.BLUE_700, color=ft.Colors.WHITE):
-        return ft.ElevatedButton(
-        content=ft.Row([
-            ft.Icon(icone, size=16),
-            ft.Text(texto, size=14),
-        ], spacing=6, tight=True),
-        on_click=on_click,
-        expand=expand,
-        bgcolor=bgcolor,
-        color=color,
-        style=ft.ButtonStyle(
-            shape=ft.RoundedRectangleBorder(radius=8),
-        ),
-    )
+        return ft.ElevatedButton(  # <── Alterado para ElevatedButton
+            content=ft.Row([
+                ft.Icon(icone, size=16),
+                ft.Text(texto, size=14) if texto else ft.Container(), # Trata botões que só têm ícone
+            ], spacing=6 if texto else 0, tight=True),
+            on_click=on_click,
+            expand=expand,
+            style=ft.ButtonStyle(
+                bgcolor=bgcolor,
+                color=color,
+                shape=ft.RoundedRectangleBorder(radius=8),
+            ),
+        )
         
     def criar_botao_secundario(texto: str, icone, on_click, expand=False, color=ft.Colors.BLUE_700):
-        return ft.OutlinedButton(
-        content=ft.Row([
-            ft.Icon(icone, size=16),
-            ft.Text(texto, size=14),
-        ], spacing=6, tight=True),
-        on_click=on_click,
-        expand=expand,
-        style=ft.ButtonStyle(
-            shape=ft.RoundedRectangleBorder(radius=8),
-            color=color,
-        ),
-    )
+        return ft.OutlinedButton(  # <── Alterado para OutlinedButton
+            content=ft.Row([
+                ft.Icon(icone, size=16),
+                ft.Text(texto, size=14),
+            ], spacing=6, tight=True),
+            on_click=on_click,
+            expand=expand,
+            style=ft.ButtonStyle(
+                color=color,
+                shape=ft.RoundedRectangleBorder(radius=8),
+            ),
+        )
+
 
     def renderizar_menu():
         opcoes = [
@@ -262,7 +264,7 @@ def main(page: ft.Page):
             itens.append(
             ft.TextButton(
                 content=ft.Text(label),
-                on_click=lambda e, dest=rota: navegar(dest),
+                on_click=lambda e, dest=rota: asyncio.create_task(navegar(dest)),
                 style=ft.ButtonStyle(
                     color=ft.Colors.WHITE if ativo else ft.Colors.BLUE_700,
                     bgcolor=ft.Colors.BLUE_700 if ativo else ft.Colors.BLUE_50,
@@ -323,6 +325,7 @@ def main(page: ft.Page):
             cliente_email.value = cliente.get("email", "")
             cliente_telefone.value = cliente.get("telefone", "")
             estado["cliente_edit_id"] = cliente_id
+            route_change()
 
         def salvar_cliente_edit(e):
             if not estado["cliente_edit_id"]:
@@ -353,7 +356,7 @@ def main(page: ft.Page):
             cliente_email.value = ""
             cliente_telefone.value = ""
             estado["cliente_edit_id"] = None
-            page.update()
+            route_change()
 
         btn_salvar = criar_botao_primario(
             "Salvar",
@@ -420,6 +423,7 @@ def main(page: ft.Page):
             prateleira_dias.value = str(prateleira["dias_e_prazo"])
             prateleira_multa.value = str(prateleira["multa_por_dia"])
             estado["prateleira_edit_id"] = prateleira_id
+            route_change()
 
         def salvar_prateleira_edit(e):
             if not estado["prateleira_edit_id"]:
@@ -454,7 +458,7 @@ def main(page: ft.Page):
             prateleira_dias.value = ""
             prateleira_multa.value = ""
             estado["prateleira_edit_id"] = None
-            page.update()
+            route_change()
 
         btn_salvar = criar_botao_primario(
             "Salvar",
@@ -518,6 +522,7 @@ def main(page: ft.Page):
             livro_autor.value = livro["autor"]
             livro_prateleira.value = str(livro["prateleira_id"])
             estado["livro_edit_id"] = livro_id
+            route_change() # ── ADICIONADO: Atualiza a tela para mudar o botão Salvar para Laranja
 
         def salvar_livro_edit(e):
             if not estado["livro_edit_id"]:
@@ -548,12 +553,13 @@ def main(page: ft.Page):
             livro_autor.value = ""
             livro_prateleira.value = None
             estado["livro_edit_id"] = None
-            page.update()
+            route_change() # ── ALTERADO: Redesenha a tela limpando o estado de edição
 
+        # Otimização: O botão de salvar só ativa a função se houver algo sendo editado
         btn_salvar = criar_botao_primario(
             "Salvar",
             ft.Icons.SAVE,
-            salvar_livro_edit,
+            salvar_livro_edit if estado["livro_edit_id"] else None,
             bgcolor=ft.Colors.ORANGE if estado["livro_edit_id"] else ft.Colors.GREY
         )
 
@@ -572,7 +578,7 @@ def main(page: ft.Page):
                         ft.Text("Emprestado" if emprestado else "Disponível", color=ft.Colors.RED if emprestado else ft.Colors.GREEN),
                         criar_botao_primario("", ft.Icons.EDIT, lambda e, lid=livro["id"]: editar_livro(lid), bgcolor=ft.Colors.BLUE) if not emprestado else ft.Container(),
                         criar_botao_primario("", ft.Icons.DELETE, lambda e, lid=livro["id"]: deletar_livro(lid), bgcolor=ft.Colors.RED) if not emprestado else ft.Container(),
-                    ], spacing=5),
+                    ], spacing=5, tight=True), # ── ADICIONADO: tight=True evita bugs de tamanho na linha de ações
                 )
             )
 
@@ -625,29 +631,41 @@ def main(page: ft.Page):
             multa = next((m for m in dados["multas"] if m["emprestimo_id"] == emprestimo_id and m["status"] == "Pendente"), None)
             
             if multa:
+                # Criamos a estrutura do diálogo de forma isolada
                 dlg = ft.AlertDialog(
                     title=ft.Text(f"Devolução com Multa"),
                     content=ft.Column([
                         ft.Text(f"Este empréstimo tem uma multa de R${multa['valor']:.2f}"),
                         ft.Text("O cliente pagou a multa?"),
-                    ], spacing=10),
+                    ], spacing=10, tight=True),
                     actions=[
-                        ft.TextButton("Não (Ir para Multas)", lambda e: navegar("/multas")),
-                        ft.TextButton("Sim (Finalizar Devolução)", lambda e: finalizar_devolucao(e, emprestimo_id, multa)),
+                        ft.TextButton("Não (Ir para Multas)", on_click=lambda e: fechar_e_ir_para_multas(dlg)),
+                        ft.TextButton("Sim (Finalizar Devolução)", on_click=lambda e: finalizar_devolucao(e, emprestimo_id, multa, dlg)),
                     ],
                 )
-                page.dialog = dlg
+                # ── CORREÇÃO 1: Adiciona o diálogo no overlay de forma moderna
+                page.overlay.append(dlg)
                 dlg.open = True
                 page.update()
             else:
-                finalizar_devolucao(None, emprestimo_id, None)
+                finalizar_devolucao(None, emprestimo_id, None, None)
 
-        def finalizar_devolucao(e, emprestimo_id, multa_paga):
+        def fechar_e_ir_para_multas(dlg):
+            dlg.open = False  # Fecha o aviso antes de mudar de tela
+            page.update()
+            asyncio.create_task(navegar("/multas"))
+
+        def finalizar_devolucao(e, emprestimo_id, multa_paga, dlg):
             emprestimo = obter_por_id(dados["emprestimos"], emprestimo_id)
             if emprestimo:
                 emprestimo["status"] = "Entregue"
                 if multa_paga:
                     multa_paga["status"] = "Pago"
+                
+                # ── CORREÇÃO 2: Se houver um diálogo aberto, fecha ele aqui
+                if dlg:
+                    dlg.open = False
+                
                 salvar_e_atualizar()
                 mostrar_snack("Devolução registrada com sucesso.")
 
@@ -727,32 +745,25 @@ def main(page: ft.Page):
 
     def construir_appbar():
         return ft.AppBar(
-            # Ícone de livraria/painel no canto esquerdo
             leading=ft.Icon(ft.Icons.MENU_BOOK, color=ft.Colors.WHITE),
             leading_width=48,
-            
-            # Título dinâmico baseado na rota atual
             title=ft.Text(
                 titulos_paginas.get(estado["rota"], "Sistema de Biblioteca"),
                 color=ft.Colors.WHITE,
                 size=18,
                 weight="bold",
             ),
-            
-            # Cor azul fixa (combina com o tema padrão que você definiu)
             bgcolor=ft.Colors.BLUE_700,
             center_title=False,
         )
 
     def route_change(e=None):
-        # 1. Captura a rota disparada pelo Flet se ela existir
+
         if e is not None and hasattr(e, "route"):
             estado["rota"] = e.route
 
-        # 2. Atualiza os dados dos dropdowns antes de desenhar a tela
         atualizar_dropdowns()
 
-        # 3. Mapeia as funções das suas telas
         views_map = {
             "/": view_home,
             "/clientes": view_clientes,
@@ -762,29 +773,26 @@ def main(page: ft.Page):
             "/multas": view_multas
         }
         
-        # Busca a tela atual. Se não achar, abre a home para não travar o sistema
         view_fn = views_map.get(estado["rota"], view_home)
 
-        # 4. Estrutura o conteúdo principal da tela
         conteudo_principal = ft.Column([
             ft.Container(
-                content=renderizar_menu(), # Apenas o menu limpo no topo
+                content=renderizar_menu(),
                 padding=ft.Padding(20, 15, 20, 10),
             ),
             ft.Divider(),
             ft.Container(
-                content=view_fn(), # Carrega a view correspondente
-                padding=ft.Padding(20, 0, 20, 20), # Margem interna para as tabelas/cards
+                content=view_fn(),
+                padding=ft.Padding(20, 0, 20, 20),
                 expand=True
             )
         ], spacing=0, expand=True)
 
-        # 5. Atualiza a pilha de visualização usando o padrão nativo do Flet
         page.views.clear()
         page.views.append(
             ft.View(
                 route=estado["rota"],
-                appbar=construir_appbar(),  # <── ADICIONADO AQUI
+                appbar=construir_appbar(),
                 controls=[conteudo_principal],
                 padding=0,
                 spacing=0
@@ -793,18 +801,30 @@ def main(page: ft.Page):
         page.update()
 
     def on_resize(e: ft.PageResizeEvent):
+        # Calcula se mudou para tamanho mobile dinamicamente
         novo_mobile = e.width < BREAKPOINT_MOBILE
-
         if novo_mobile != estado["mobile"]:
-            estado["mobile"] = novo_mobile  
-            route_change()                  
+            estado["mobile"] = novo_mobile
+            route_change()
 
-    page.on_resize       = on_resize
-    page.on_route_change = route_change 
+    # ==========================================================================
+    # REGISTRO DOS EVENTOS DA PÁGINA E PRIMEIRA EXECUÇÃO
+    # ==========================================================================
+    page.on_route_change = route_change
+    page.on_resize = on_resize
 
+    # Define a rota inicial explicitamente se o app abrir limpo
+    if not page.route or page.route == "/":
+        page.route = "/"
+    
+    # Sincroniza o estado inicial da rota
+    estado["rota"] = page.route
+
+    # Executa a montagem da primeira tela do sistema
     route_change()
 
-
+# Executa o aplicativo Flet na janela nativa do sistema
 if __name__ == "__main__":
-    ft.run(main)
+    ft.app(target=main)
+
 
