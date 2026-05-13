@@ -13,3 +13,5 @@ estado = {
             salvar_prateleira_edit if estado["prateleira_edit_id"] else None, # Se não estiver editando, o botão fica desabilitado
             bgcolor=ft.Colors.ORANGE if estado["prateleira_edit_id"] else ft.Colors.GREY
         )
+
+parei de baixo pra cima no menu lateral

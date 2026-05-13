@@ -745,6 +745,74 @@ def main(page: ft.Page):
         "/multas": "Histórico de Multas"
     }
 
+    rotas_menu = [
+        ("/",            "Home",         ft.Icons.HOME_OUTLINED,         ft.Icons.HOME),
+        ("/clientes",    "Clientes",     ft.Icons.PERSON_OUTLINE,        ft.Icons.PERSON),
+        ("/prateleiras", "Prateleiras",  ft.Icons.TABLE_ROWS_OUTLINED,   ft.Icons.TABLE_ROWS),
+        ("/livros",      "Livros",       ft.Icons.BOOK_OUTLINED,         ft.Icons.BOOK),
+        ("/emprestimos", "Empréstimos",  ft.Icons.UNDO_OUTLINED,         ft.Icons.UNDO),
+        ("/multas",      "Multas",       ft.Icons.MONETIZATION_ON_OUTLINED, ft.Icons.MONETIZATION_ON),
+    ]
+
+    def criar_item_menu(label: str, ic_off, ic_on, ativo: bool, on_click):
+        return ft.Container(
+            content=ft.Row([
+                ft.Icon(ic_on if ativo else ic_off, color=ft.Colors.BLUE_700 if ativo else ft.Colors.BLACK, size=20),
+                ft.Text(label, size=14, color=ft.Colors.BLUE_700 if ativo else ft.Colors.BLACK, weight="bold" if ativo else "normal"),
+            ], spacing=12, tight=True),
+            padding=ft.Padding(12, 10, 12, 10),
+            border_radius=8,
+            bgcolor=ft.Colors.BLUE_50 if ativo else ft.Colors.TRANSPARENT,
+            on_click=on_click,
+        )
+
+    def menu_lateral():
+        rota = estado["rota"]
+        
+        itens = [
+            criar_item_menu(
+                label, ic_off, ic_on,
+                ativo=(rota == r),
+                on_click=lambda e, dest=r: asyncio.create_task(navegar(dest))
+            )
+            for r, label, ic_off, ic_on in rotas_menu
+        ]
+
+        perfil = ft.Container(
+            content=ft.Row([
+                ft.CircleAvatar(
+                    content=ft.Text("ADM", size=10, weight="bold"),
+                    bgcolor=ft.Colors.BLUE_700,
+                    color=ft.Colors.WHITE,
+                    radius=15,
+                ),
+                ft.Column([
+                    ft.Text("Administrador", size=12, weight="bold", color=ft.Colors.BLACK),
+                    ft.Text("● Online", size=10, color=ft.Colors.GREEN_400),
+                ], spacing=0, tight=True, expand=True),
+            ], spacing=8, tight=True),
+            padding=ft.Padding(4, 8, 4, 0),
+        )
+
+        return ft.Container(
+            width=215,
+            bgcolor=ft.Colors.BLUE_50 / 3, # Deixa um fundo cinza/azul bem suave na barra lateral
+            border=ft.border.only(right=ft.BorderSide(1, ft.Colors.GREY_300)),
+            padding=12,
+            content=ft.Column([
+                ft.Row([
+                    ft.Icon(ft.Icons.MENU_BOOK, color=ft.Colors.BLUE_700, size=20),
+                    ft.Text("BiblioFlet", size=16, weight="bold", color=ft.Colors.BLUE_700),
+                ], spacing=8, tight=True),
+                ft.Divider(height=16, color=ft.Colors.GREY_300),
+                *itens,
+                ft.Divider(height=16, color=ft.Colors.GREY_300),
+                perfil,
+            ], spacing=4, tight=True),
+        )
+
+
+
     def navigation_bar_mobile():
         rota_atual = estado["rota"]
         idx = _indice_rotas.index(rota_atual) if rota_atual in _indice_rotas else 0
@@ -799,25 +867,23 @@ def main(page: ft.Page):
         # ── CONFIGURAÇÃO DE LAYOUT RESPONSIVO ────────────────────────────────
         # Se for mobile, removemos o menu do topo para não duplicar a navegação
         if estado["mobile"]:
+            # Layout Mobile (sem menu na tela, usa navigation_bar inferior nativa)
             conteudo_principal = ft.Container(
                 content=view_fn(),
                 padding=ft.Padding(20, 10, 20, 10),
                 expand=True
             )
         else:
-            # Layout Computador com menu superior
-            conteudo_principal = ft.Column([
-                ft.Container(
-                    content=renderizar_menu(),
-                    padding=ft.Padding(20, 15, 20, 10),
-                ),
-                ft.Divider(),
+            # Layout Computador (Menu lateral à esquerda + Conteúdo à direita)
+            conteudo_principal = ft.Row([
+                menu_lateral(),  # ── PAINEL ESQUERDO FIXO
                 ft.Container(
                     content=view_fn(),
-                    padding=ft.Padding(20, 0, 20, 20),
-                    expand=True
+                    padding=ft.Padding(20, 20, 20, 20),
+                    expand=True  # Ocupa o resto do espaço da tela horizontalmente
                 )
             ], spacing=0, expand=True)
+
 
         # Atualiza a pilha de visualização aplicando a barra inferior condicionalmente
         page.views.clear()
