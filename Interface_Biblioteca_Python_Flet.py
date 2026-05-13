@@ -837,7 +837,7 @@ def main(page: ft.Page):
             emprestimo_livro.value = None
             await salvar_e_atualizar("Empréstimo cadastrado.")
 
-        def acionar_devolucao(emprestimo_id):
+        async def acionar_devolucao(emprestimo_id):
             emprestimo = obter_por_id(dados["emprestimos"], emprestimo_id)
             if not emprestimo:
                 return
@@ -845,6 +845,9 @@ def main(page: ft.Page):
             multa = next((m for m in dados["multas"] if m["emprestimo_id"] == emprestimo_id and m["status"] == "Pendente"), None)
             
             if multa:
+                async def confirmar_devolucao(e, eid=emprestimo_id, multa_pago=multa, dlg=dlg):
+                    await finalizar_devolucao(None, eid, multa_pago, dlg)
+
                 # Criamos a estrutura do diálogo de forma isolada
                 dlg = ft.AlertDialog(
                     title=ft.Text(f"Devolução com Multa"),
@@ -854,7 +857,7 @@ def main(page: ft.Page):
                     ], spacing=10, tight=True),
                     actions=[
                         ft.TextButton("Não (Ir para Multas)", on_click=lambda e: fechar_e_ir_para_multas(dlg)),
-                        ft.TextButton("Sim (Finalizar Devolução)", on_click=lambda e: finalizar_devolucao(e, emprestimo_id, multa, dlg)),
+                        ft.TextButton("Sim (Finalizar Devolução)", on_click=confirmar_devolucao),
                     ],
                 )
                 # ── CORREÇÃO 1: Adiciona o diálogo no overlay de forma moderna
@@ -862,7 +865,7 @@ def main(page: ft.Page):
                 dlg.open = True
                 page.update()
             else:
-                finalizar_devolucao(None, emprestimo_id, None, None)
+                await finalizar_devolucao(None, emprestimo_id, None, None)
 
         def fechar_e_ir_para_multas(dlg):
             dlg.open = False  # Fecha o aviso antes de mudar de tela
@@ -879,6 +882,7 @@ def main(page: ft.Page):
                 # ── CORREÇÃO 2: Se houver um diálogo aberto, fecha ele aqui
                 if dlg:
                     dlg.open = False
+                    page.update()
                 
                 await salvar_e_atualizar("Devolução registrada com sucesso.")
 
@@ -886,6 +890,10 @@ def main(page: ft.Page):
         for emprestimo in dados["emprestimos"]:
             cliente = obter_por_id(dados["clientes"], emprestimo["cliente_id"])
             livro = obter_por_id(dados["livros"], emprestimo["livro_id"])
+
+            async def on_devolver(e, eid=emprestimo["id"]):
+                await acionar_devolucao(eid)
+
             linhas.append(
                 ft.ListTile(
                     title=ft.Text(f"{livro['titulo'] if livro else 'Livro removido'}", weight="bold"),
@@ -895,7 +903,7 @@ def main(page: ft.Page):
                         ft.Text(f"Emprestado: {emprestimo['data_emprestimo']}", size=11),
                         ft.Text(f"Devolução prevista: {emprestimo['data_entrega']}", size=11),
                     ], spacing=2),
-                    trailing=criar_botao_primario("Devolver", ft.Icons.UNDO, lambda e, eid=emprestimo['id']: acionar_devolucao(eid), bgcolor=ft.Colors.ORANGE)
+                    trailing=criar_botao_primario("Devolver", ft.Icons.UNDO, on_devolver, bgcolor=ft.Colors.ORANGE)
                     if emprestimo["status"] in [STATUS_ABERTO, STATUS_ATRASADO] else ft.Text("Concluído", color=ft.Colors.GREEN),
                 )
             )
