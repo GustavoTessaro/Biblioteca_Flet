@@ -68,6 +68,7 @@ def carregar_dados() -> dict:
             return json.load(arquivo)
     except Exception:
         return {
+            #Verificar Depois se o JSON estiver corrompido perde os dados silenciosamente. 
             "clientes": [],
             "prateleiras": [],
             "livros": [],
@@ -75,33 +76,26 @@ def carregar_dados() -> dict:
             "multas": [],
         }
 
-
 def salvar_dados(dados: dict):
     with open(DATA_FILE, "w", encoding="utf-8") as arquivo:
         json.dump(dados, arquivo, indent=2, ensure_ascii=False)
 
-
 def formatar_data(valor: date) -> str:
     return valor.isoformat()
 
-
 def parse_data(texto: str) -> date:
     return date.fromisoformat(texto)
-
 
 def proximo_id(lista: list) -> int:
     if not lista:
         return 1
     return max(item["id"] for item in lista) + 1
 
-
 def obter_por_id(lista: list, id_valor: int) -> dict | None:
     return next((item for item in lista if item["id"] == id_valor), None)
 
-
 def calcular_valor_multa(dias_atraso: int, valor_por_dia: float) -> float:
     return round(dias_atraso * valor_por_dia, 2)
-
 
 def obter_status_emprestimo(emprestimo: dict, hoje: date) -> str:
     if emprestimo["status"] == "Entregue":
@@ -110,7 +104,6 @@ def obter_status_emprestimo(emprestimo: dict, hoje: date) -> str:
     if hoje > data_entrega:
         return "Atrasado"
     return "Aberto"
-
 
 def verificar_atrasos_e_multas(dados: dict):
     hoje = date.today()
@@ -147,17 +140,14 @@ def verificar_atrasos_e_multas(dados: dict):
 
     salvar_dados(dados)
 
-
 def livro_esta_emprestado(livro_id: int, dados: dict) -> bool:
     return any(
         emprestimo["livro_id"] == livro_id and emprestimo["status"] in ["Aberto", "Atrasado"]
         for emprestimo in dados["emprestimos"]
     )
 
-
 def prateleira_tem_livros(prateleira_id: int, dados: dict) -> bool:
     return any(livro["prateleira_id"] == prateleira_id for livro in dados["livros"])
-
 
 def cliente_tem_emprestimos_ativos(cliente_id: int, dados: dict) -> bool:
     return any(
@@ -217,7 +207,7 @@ def main(page: ft.Page):
 
     def mostrar_snack(msg: str, cor=ft.Colors.GREEN_700):
         snackbar = ft.SnackBar(content=ft.Text(msg, color=ft.Colors.WHITE), bgcolor=cor, duration=2500)
-        page.overlay.append(snackbar)
+        page.snack_bar = snackbar
         snackbar.open = True
         page.update()
 
@@ -312,7 +302,7 @@ def main(page: ft.Page):
             itens.append(
             ft.TextButton(
                 content=ft.Text(label),
-                on_click=lambda e, dest=rota: asyncio.create_task(navegar(dest)),
+                on_click=lambda e, dest=rota: navegar(dest),
                 style=ft.ButtonStyle(
                     color=ft.Colors.WHITE if ativo else ft.Colors.BLUE_700,
                     bgcolor=ft.Colors.BLUE_700 if ativo else ft.Colors.BLUE_50,
@@ -692,7 +682,7 @@ def main(page: ft.Page):
                     ],
                 )
                 # ── CORREÇÃO 1: Adiciona o diálogo no overlay de forma moderna
-                page.overlay.append(dlg)
+                page.dialog = dlg
                 dlg.open = True
                 page.update()
             else:
@@ -701,7 +691,7 @@ def main(page: ft.Page):
         def fechar_e_ir_para_multas(dlg):
             dlg.open = False  # Fecha o aviso antes de mudar de tela
             page.update()
-            asyncio.create_task(navegar("/multas"))
+            navegar("/multas")
 
         def finalizar_devolucao(e, emprestimo_id, multa_paga, dlg):
             emprestimo = obter_por_id(dados["emprestimos"], emprestimo_id)
@@ -819,7 +809,7 @@ def main(page: ft.Page):
             criar_item_menu(
                 label, ic_off, ic_on,
                 ativo=(rota == r),
-                on_click=lambda e, dest=r: asyncio.create_task(navegar(dest))
+                on_click=lambda e, dest=r: navegar(dest)
             )
             for r, label, ic_off, ic_on in rotas_menu
         ]
@@ -875,7 +865,7 @@ def main(page: ft.Page):
 
         def ao_mudar(e):
             # Como a sua função navegar agora usa asyncio, chamamos via task
-            asyncio.create_task(navegar(_indice_rotas[e.control.selected_index]))
+            navegar(_indice_rotas[e.control.selected_index])
 
         return ft.NavigationBar(
             selected_index=idx,
