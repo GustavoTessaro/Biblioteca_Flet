@@ -13,3 +13,7 @@ env/
 .idea/
 build/
 dist/
+
+#JSON
+
+biblioteca_data.JSON
