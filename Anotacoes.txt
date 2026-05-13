@@ -14,4 +14,183 @@ estado = {
             bgcolor=ft.Colors.ORANGE if estado["prateleira_edit_id"] else ft.Colors.GREY
         )
 
-parei de baixo pra cima no menu lateral
+FALTA:
+
+def toggle_theme_switch(e):
+
+        # Sincroniza o estado interno com o valor atual do Switch
+        estado["dark_mode"] = e.control.value
+
+        # Aplica o tema ao Flet — isso muda a aparência dos widgets nativos
+        # (Switch, TextField, NavigationBar, etc.) que respondem ao ThemeMode
+        page.theme_mode = (
+            ft.ThemeMode.DARK if estado["dark_mode"] else ft.ThemeMode.LIGHT
+        )
+
+        # Reconstrói toda a interface para aplicar as cores da nova paleta
+        route_change()
+
+
+    # --------------------------------------------------------------------------
+    # HANDLER: _toggle_tema_rapido()
+    # --------------------------------------------------------------------------
+    # Chamado pelo botão de sol/lua na AppBar (canto superior direito).
+    # Inverte o tema atual sem precisar de um evento com valor explícito.
+    #
+    # O underscore (_) no início é uma convenção Python que indica que esta
+    # função é "privada" — de uso interno, não deve ser chamada de fora.
+    # --------------------------------------------------------------------------
+    def _toggle_tema_rapido():
+
+        # Operador "not" inverte o booleano: True → False, False → True
+        estado["dark_mode"] = not estado["dark_mode"]
+
+        page.theme_mode = (
+            ft.ThemeMode.DARK if estado["dark_mode"] else ft.ThemeMode.LIGHT
+        )
+
+        route_change()
+
+def criar_dica(mensagem: str, p: dict) -> ft.Container:
+
+    return ft.Container(
+
+        # Row posiciona os filhos lado a lado horizontalmente
+        content=ft.Row([
+
+            # Ícone de lâmpada — cor âmbar fixa (não muda com o tema)
+            ft.Icon(ft.Icons.LIGHTBULB_OUTLINE, color=ft.Colors.AMBER_700, size=16),
+
+            # expand=True: o texto ocupa todo o espaço restante da Row
+            # Isso evita que textos longos "empurrem" o ícone para fora
+            ft.Text(mensagem, size=13, color=p["txt_dica"], expand=True),
+
+        ], spacing=8),  # 8px entre ícone e texto
+
+        # ft.Padding(esquerda, cima, direita, baixo) — espaços internos
+        padding=ft.Padding(12, 10, 12, 10),
+
+        bgcolor=p["bg_dica"],               # fundo âmbar claro (ou escuro no dark)
+        border_radius=8,                    # cantos levemente arredondados
+        border=ft.border.all(1, p["borda_dica"]),  # borda fina âmbar
+    )
+
+    def paleta(dark: bool) -> dict:
+
+    # Bloco executado quando dark=True (tema ESCURO ativo)
+    if dark:
+        return {
+
+            # ------------------------------------------------------------------
+            # SUPERFÍCIES — cores de fundo dos elementos visuais
+            # ------------------------------------------------------------------
+            # GREY_900 é o cinza mais escuro disponível no Flet (quase preto).
+            # Usamos tons de cinza escuro para simular o "Material Dark Theme".
+            "bg_page":    ft.Colors.GREY_900,   # fundo da janela inteira
+            "bg_sidebar": ft.Colors.GREY_900,   # fundo do menu lateral
+            "bg_card":    ft.Colors.GREY_800,   # fundo dos cards genéricos
+
+            # with_opacity(opacidade, cor): aplica transparência à cor.
+            # O valor 0.15 significa 15% de opacidade (quase transparente).
+            # Isso cria um toque sutil de cor sem "estourar" o fundo escuro.
+            # Exemplo: bg_card_blue no dark = azul muito transparente sobre cinza.
+            "bg_card_blue":   ft.Colors.with_opacity(0.15, ft.Colors.BLUE_200),
+            "bg_card_green":  ft.Colors.with_opacity(0.15, ft.Colors.GREEN_200),
+            "bg_card_orange": ft.Colors.with_opacity(0.15, ft.Colors.ORANGE_200),
+            "bg_dica":        ft.Colors.with_opacity(0.15, ft.Colors.AMBER_200),
+            "bg_info_box":    ft.Colors.with_opacity(0.12, ft.Colors.BLUE_200),
+            "bg_menu_ativo":  ft.Colors.with_opacity(0.18, ft.Colors.BLUE_200),
+
+            # ------------------------------------------------------------------
+            # BORDAS — linhas ao redor dos containers e cards
+            # ------------------------------------------------------------------
+            # No tema escuro, bordas mais escuras evitam contraste excessivo.
+            "borda_padrao":     ft.Colors.GREY_700,
+            "borda_blue":       ft.Colors.BLUE_800,
+            "borda_green":      ft.Colors.GREEN_800,
+            "borda_orange":     ft.Colors.ORANGE_800,
+            "borda_dica":       ft.Colors.AMBER_700,
+            "borda_info":       ft.Colors.BLUE_800,
+            "borda_menu_ativo": ft.Colors.BLUE_700,
+            "borda_sidebar":    ft.Colors.GREY_700,
+
+            # ------------------------------------------------------------------
+            # TEXTOS — cores dos textos em cada contexto
+            # ------------------------------------------------------------------
+            # No tema escuro, textos devem ser CLAROS para contrastar com o fundo.
+            "txt_titulo":     ft.Colors.WHITE,      # títulos principais de cada página
+            "txt_subtitulo":  ft.Colors.GREY_400,   # textos de apoio/descrição
+            "txt_card_label": ft.Colors.GREY_400,   # rótulo no topo de cada card
+            "txt_card_valor": ft.Colors.WHITE,      # valor/conteúdo dentro do card
+            "txt_menu_ativo": ft.Colors.BLUE_300,   # item selecionado no menu
+            "txt_menu_normal":ft.Colors.GREY_300,   # itens não selecionados no menu
+            "txt_dica":       ft.Colors.AMBER_200,  # texto das caixas de dica (amarelas)
+            "txt_semana":     ft.Colors.GREY_600,   # texto de rodapé/versão do app
+            "txt_divider":    ft.Colors.GREY_700,   # cor das linhas divisórias (Divider)
+
+            # ------------------------------------------------------------------
+            # ÍCONES — cores dos ícones no menu lateral
+            # ------------------------------------------------------------------
+            "icone_menu_ativo": ft.Colors.BLUE_300,  # ícone do item ativo
+            "icone_menu_norm":  ft.Colors.GREY_400,  # ícone dos itens inativos
+
+            # ------------------------------------------------------------------
+            # AVATAR — círculo com a inicial do nome do usuário
+            # ------------------------------------------------------------------
+            "avatar_bg": ft.Colors.BLUE_900,   # cor de fundo do círculo
+            "avatar_fg": ft.Colors.BLUE_200,   # cor da letra dentro do círculo
+
+            # ------------------------------------------------------------------
+            # SOMBRA — efeito de profundidade/elevação nos cards
+            # ------------------------------------------------------------------
+            # 30% de opacidade no escuro cria sombra visível sem exagero.
+            "sombra": ft.Colors.with_opacity(0.30, ft.Colors.BLACK),
+        }
+
+    # Bloco executado quando dark=False (tema CLARO ativo)
+    else:
+        return {
+
+            # Superfícies claras — branco e cinza bem claro (GREY_50)
+            "bg_page":        ft.Colors.WHITE,
+            "bg_sidebar":     ft.Colors.GREY_50,
+            "bg_card":        ft.Colors.WHITE,
+            "bg_card_blue":   ft.Colors.BLUE_50,     # azul pastel
+            "bg_card_green":  ft.Colors.GREEN_50,    # verde pastel
+            "bg_card_orange": ft.Colors.ORANGE_50,   # laranja pastel
+            "bg_dica":        ft.Colors.AMBER_50,    # âmbar pastel
+            "bg_info_box":    ft.Colors.BLUE_50,
+            "bg_menu_ativo":  ft.Colors.BLUE_50,
+
+            # Bordas suaves — tons médios de cada cor
+            "borda_padrao":     ft.Colors.BLUE_200,
+            "borda_blue":       ft.Colors.BLUE_200,
+            "borda_green":      ft.Colors.GREEN_200,
+            "borda_orange":     ft.Colors.ORANGE_200,
+            "borda_dica":       ft.Colors.AMBER_200,
+            "borda_info":       ft.Colors.BLUE_100,
+            "borda_menu_ativo": ft.Colors.BLUE_200,
+            "borda_sidebar":    ft.Colors.GREY_200,
+
+            # Textos escuros — legíveis sobre fundo claro
+            "txt_titulo":     ft.Colors.BLACK,
+            "txt_subtitulo":  ft.Colors.GREY_600,
+            "txt_card_label": ft.Colors.GREY_600,
+            "txt_card_valor": ft.Colors.BLACK,
+            "txt_menu_ativo": ft.Colors.BLUE_700,
+            "txt_menu_normal":ft.Colors.GREY_700,
+            "txt_dica":       ft.Colors.AMBER_900,
+            "txt_semana":     ft.Colors.GREY_400,
+            "txt_divider":    ft.Colors.GREY_200,
+
+            # Ícones
+            "icone_menu_ativo": ft.Colors.BLUE_700,
+            "icone_menu_norm":  ft.Colors.GREY_500,
+
+            # Avatar
+            "avatar_bg": ft.Colors.BLUE_100,
+            "avatar_fg": ft.Colors.BLUE_700,
+
+            # Sombra discreta — 7% de opacidade no claro é suficiente
+            "sombra": ft.Colors.with_opacity(0.07, ft.Colors.BLACK),
+        }
