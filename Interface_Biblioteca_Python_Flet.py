@@ -7,7 +7,7 @@ import flet as ft
 DATA_FILE = "biblioteca_data.json"
 BREAKPOINT_MOBILE = 600
 
-#region
+#region Funções
 
 def carregar_dados() -> dict:
     if not os.path.exists(DATA_FILE):
@@ -124,6 +124,7 @@ def cliente_tem_emprestimos_ativos(cliente_id: int, dados: dict) -> bool:
 #endregion
 
 def main(page: ft.Page):
+    
     #region Configurações da Página e Estado
     page.title = "Biblioteca Flet"
     page.padding = 0
