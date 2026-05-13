@@ -8,6 +8,13 @@ import flet as ft
 DATA_FILE = "biblioteca_data.json"
 BREAKPOINT_MOBILE = 600
 
+BORDER_RADIUS = 8
+BUTTON_SHAPE = ft.RoundedRectangleBorder(radius=BORDER_RADIUS)
+STATUS_ABERTO = "Aberto"
+STATUS_ATRASADO = "Atrasado"
+STATUS_ENTREGUE = "Entregue"
+STATUS_VALIDOS = [STATUS_ABERTO, STATUS_ATRASADO, STATUS_ENTREGUE]
+
 _indice_rotas = ["/", "/clientes", "/livros", "/emprestimos", "/multas"]
 
 def paleta(dark: bool) -> dict:
@@ -86,6 +93,14 @@ def formatar_data(valor: date) -> str:
 def parse_data(texto: str) -> date:
     return date.fromisoformat(texto)
 
+def parse_float(texto: str, default: float | None = None) -> float | None:
+    if not texto or not texto.strip():
+        return default
+    try:
+        return float(texto.strip().replace(",", "."))
+    except ValueError:
+        return None
+
 def proximo_id(lista: list) -> int:
     if not lista:
         return 1
@@ -98,17 +113,17 @@ def calcular_valor_multa(dias_atraso: int, valor_por_dia: float) -> float:
     return round(dias_atraso * valor_por_dia, 2)
 
 def obter_status_emprestimo(emprestimo: dict, hoje: date) -> str:
-    if emprestimo["status"] == "Entregue":
-        return "Entregue"
+    if emprestimo["status"] == STATUS_ENTREGUE:
+        return STATUS_ENTREGUE
     data_entrega = parse_data(emprestimo["data_entrega"])
     if hoje > data_entrega:
-        return "Atrasado"
-    return "Aberto"
+        return STATUS_ATRASADO
+    return STATUS_ABERTO
 
 def verificar_atrasos_e_multas(dados: dict):
     hoje = date.today()
     for emprestimo in dados["emprestimos"]:
-        if emprestimo["status"] != "Entregue":
+        if emprestimo["status"] != STATUS_ENTREGUE:
             novo_status = obter_status_emprestimo(emprestimo, hoje)
             emprestimo["status"] = novo_status
 
@@ -142,7 +157,7 @@ def verificar_atrasos_e_multas(dados: dict):
 
 def livro_esta_emprestado(livro_id: int, dados: dict) -> bool:
     return any(
-        emprestimo["livro_id"] == livro_id and emprestimo["status"] in ["Aberto", "Atrasado"]
+        emprestimo["livro_id"] == livro_id and emprestimo["status"] in [STATUS_ABERTO, STATUS_ATRASADO]
         for emprestimo in dados["emprestimos"]
     )
 
@@ -151,7 +166,7 @@ def prateleira_tem_livros(prateleira_id: int, dados: dict) -> bool:
 
 def cliente_tem_emprestimos_ativos(cliente_id: int, dados: dict) -> bool:
     return any(
-        emprestimo["cliente_id"] == cliente_id and emprestimo["status"] in ["Aberto", "Atrasado"]
+        emprestimo["cliente_id"] == cliente_id and emprestimo["status"] in [STATUS_ABERTO, STATUS_ATRASADO]
         for emprestimo in dados["emprestimos"]
     )
 
@@ -185,18 +200,18 @@ def main(page: ft.Page):
     #region TextFields e Dropdowns
 
     # TextField para clientes
-    cliente_nome = ft.TextField(label="Nome do cliente", hint_text="Ex: João Alberto",  prefix_icon=ft.Icons.PERSON_OUTLINE, expand=True, border_radius=8)
-    cliente_email = ft.TextField(label="E-mail do cliente", hint_text="Ex: joao@email.com", prefix_icon=ft.Icons.EMAIL_OUTLINED, expand=True, border_radius=8, keyboard_type=ft.KeyboardType.EMAIL)
-    cliente_telefone = ft.TextField(label="Telefone", hint_text="Ex: (49) 9 9999-9999", prefix_icon=ft.Icons.PHONE_OUTLINED, expand=True, border_radius=8, keyboard_type=ft.KeyboardType.PHONE)
+    cliente_nome = ft.TextField(label="Nome do cliente", hint_text="Ex: João Alberto",  prefix_icon=ft.Icons.PERSON_OUTLINE, expand=True, border_radius=BORDER_RADIUS)
+    cliente_email = ft.TextField(label="E-mail do cliente", hint_text="Ex: joao@email.com", prefix_icon=ft.Icons.EMAIL_OUTLINED, expand=True, border_radius=BORDER_RADIUS, keyboard_type=ft.KeyboardType.EMAIL)
+    cliente_telefone = ft.TextField(label="Telefone", hint_text="Ex: (49) 9 9999-9999", prefix_icon=ft.Icons.PHONE_OUTLINED, expand=True, border_radius=BORDER_RADIUS, keyboard_type=ft.KeyboardType.PHONE)
 
     # TextField para prateleiras
-    prateleira_nome = ft.TextField(label="Nome da prateleira", hint_text="Ex: Terror", prefix_icon=ft.Icons.TABLE_ROWS_OUTLINED, expand=True, border_radius=8)
-    prateleira_dias = ft.TextField(label="Dias de empréstimo", hint_text="Ex: 7", prefix_icon=ft.Icons.CALENDAR_TODAY_OUTLINED, expand=True, border_radius=8)
-    prateleira_multa = ft.TextField(label="Multa por dia", hint_text="Ex: 1.5", prefix_icon=ft.Icons.MONETIZATION_ON_OUTLINED, expand=True, border_radius=8)
+    prateleira_nome = ft.TextField(label="Nome da prateleira", hint_text="Ex: Terror", prefix_icon=ft.Icons.TABLE_ROWS_OUTLINED, expand=True, border_radius=BORDER_RADIUS)
+    prateleira_dias = ft.TextField(label="Dias de empréstimo", hint_text="Ex: 7", prefix_icon=ft.Icons.CALENDAR_TODAY_OUTLINED, expand=True, border_radius=BORDER_RADIUS)
+    prateleira_multa = ft.TextField(label="Multa por dia", hint_text="Ex: 1.5", prefix_icon=ft.Icons.MONETIZATION_ON_OUTLINED, expand=True, border_radius=BORDER_RADIUS)
 
     # TextField para livros
-    livro_titulo = ft.TextField(label="Título do livro", hint_text="Ex: Senhor dos Anéis", prefix_icon=ft.Icons.BOOK_OUTLINED, expand=True, border_radius=8)
-    livro_autor = ft.TextField(label="Autor", hint_text="Ex: J.R.R. Tolkien", prefix_icon=ft.Icons.CREATE_OUTLINED, expand=True, border_radius=8)
+    livro_titulo = ft.TextField(label="Título do livro", hint_text="Ex: Senhor dos Anéis", prefix_icon=ft.Icons.BOOK_OUTLINED, expand=True, border_radius=BORDER_RADIUS)
+    livro_autor = ft.TextField(label="Autor", hint_text="Ex: J.R.R. Tolkien", prefix_icon=ft.Icons.CREATE_OUTLINED, expand=True, border_radius=BORDER_RADIUS)
     livro_prateleira = ft.Dropdown(label="Prateleira", leading_icon=ft.Icons.LAYERS_OUTLINED, expand=True)
 
     # Dropdown para empréstimos
@@ -271,7 +286,7 @@ def main(page: ft.Page):
             style=ft.ButtonStyle(
                 bgcolor=bgcolor,
                 color=color,
-                shape=ft.RoundedRectangleBorder(radius=8),
+                shape=BUTTON_SHAPE,
             ),
         )
         
@@ -285,9 +300,30 @@ def main(page: ft.Page):
             expand=expand,
             style=ft.ButtonStyle(
                 color=color,
-                shape=ft.RoundedRectangleBorder(radius=8),
+                shape=BUTTON_SHAPE,
             ),
         )
+
+    def criar_layout_form(controles: list[ft.Control], spacing: int = 10):
+        return ft.Column(controles, spacing=spacing) if estado["mobile"] else ft.Row(controles, spacing=spacing)
+
+    def limpar_form_cliente():
+        cliente_nome.value = ""
+        cliente_email.value = ""
+        cliente_telefone.value = ""
+        estado["cliente_edit_id"] = None
+
+    def limpar_form_prateleira():
+        prateleira_nome.value = ""
+        prateleira_dias.value = ""
+        prateleira_multa.value = ""
+        estado["prateleira_edit_id"] = None
+
+    def limpar_form_livro():
+        livro_titulo.value = ""
+        livro_autor.value = ""
+        livro_prateleira.value = None
+        estado["livro_edit_id"] = None
 
     def renderizar_menu():
         opcoes = [
@@ -308,7 +344,7 @@ def main(page: ft.Page):
                 style=ft.ButtonStyle(
                     color=ft.Colors.WHITE if ativo else ft.Colors.BLUE_700,
                     bgcolor=ft.Colors.BLUE_700 if ativo else ft.Colors.BLUE_50,
-                    shape=ft.RoundedRectangleBorder(radius=8),
+                    shape=BUTTON_SHAPE,
                 ),
             )
         )
@@ -338,6 +374,9 @@ def main(page: ft.Page):
         return ft.ListView([cards], expand=True, padding=20, spacing=20)
 
     def view_clientes():
+        if estado["cliente_edit_id"] and not obter_por_id(dados["clientes"], estado["cliente_edit_id"]):
+            limpar_form_cliente()
+
         def adicionar_cliente(e):
             nome = cliente_nome.value.strip()
             email = cliente_email.value.strip()
@@ -372,14 +411,12 @@ def main(page: ft.Page):
                 return
             cliente = obter_por_id(dados["clientes"], estado["cliente_edit_id"])
             if not cliente:
+                limpar_form_cliente()
                 return
             cliente["nome"] = cliente_nome.value.strip()
             cliente["email"] = cliente_email.value.strip()
             cliente["telefone"] = cliente_telefone.value.strip()
-            cliente_nome.value = ""
-            cliente_email.value = ""
-            cliente_telefone.value = ""
-            estado["cliente_edit_id"] = None
+            limpar_form_cliente()
             salvar_e_atualizar()
             mostrar_snack("Cliente atualizado.")
 
@@ -388,6 +425,8 @@ def main(page: ft.Page):
                 mostrar_snack("Não pode deletar cliente com empréstimos ativos.", ft.Colors.RED_700)
                 return
             dados["clientes"][:] = [c for c in dados["clientes"] if c["id"] != cliente_id]
+            if cliente_id == estado["cliente_edit_id"]:
+                limpar_form_cliente()
             salvar_e_atualizar()
             mostrar_snack("Cliente removido.")
 
@@ -424,13 +463,16 @@ def main(page: ft.Page):
             )
 
         lista = ft.Column([
-            ft.Row([
+            criar_layout_form([
                 cliente_nome,
                 cliente_email,
                 cliente_telefone,
                 criar_botao_primario("Cadastrar", ft.Icons.ADD, adicionar_cliente, bgcolor=ft.Colors.GREEN),
             ], spacing=10),
-            ft.Row([btn_salvar, criar_botao_secundario("Cancelar", ft.Icons.CANCEL, cancelar_edit, color=ft.Colors.GREY)], spacing=10),
+            criar_layout_form([
+                btn_salvar,
+                criar_botao_secundario("Cancelar", ft.Icons.CANCEL, cancelar_edit, color=ft.Colors.GREY),
+            ], spacing=10),
             ft.Divider(),
             ft.Text("Clientes cadastrados", weight="bold"),
             *linhas,
@@ -438,18 +480,24 @@ def main(page: ft.Page):
         return ft.ListView([lista], expand=True, padding=20, spacing=20)
 
     def view_prateleiras():
+        if estado["prateleira_edit_id"] and not obter_por_id(dados["prateleiras"], estado["prateleira_edit_id"]):
+            limpar_form_prateleira()
+
         def adicionar_prateleira(e):
             nome = prateleira_nome.value.strip()
             dias = prateleira_dias.value.strip()
-            multa = prateleira_multa.value.strip()
-            if not nome or not dias.isdigit():
+            multa_valor = parse_float(prateleira_multa.value)
+            if not nome or not dias.isdigit() or int(dias) <= 0:
                 mostrar_snack("Preencha nome e dias de empréstimo válidos.", ft.Colors.RED_700)
+                return
+            if prateleira_multa.value.strip() and multa_valor is None:
+                mostrar_snack("Multa por dia deve ser um número válido.", ft.Colors.RED_700)
                 return
             dados["prateleiras"].append({
                 "id": proximo_id(dados["prateleiras"]),
                 "nome": nome,
                 "dias_e_prazo": int(dias),
-                "multa_por_dia": float(multa.replace(",", ".")) if multa else 1.0,
+                "multa_por_dia": multa_valor if multa_valor is not None else 1.0,
             })
             prateleira_nome.value = ""
             prateleira_dias.value = ""
@@ -472,18 +520,20 @@ def main(page: ft.Page):
                 return
             prateleira = obter_por_id(dados["prateleiras"], estado["prateleira_edit_id"])
             if not prateleira:
+                limpar_form_prateleira()
                 return
             dias = prateleira_dias.value.strip()
-            if not dias.isdigit():
+            multa_valor = parse_float(prateleira_multa.value)
+            if not dias.isdigit() or int(dias) <= 0:
                 mostrar_snack("Dias deve ser um número válido.", ft.Colors.RED_700)
+                return
+            if prateleira_multa.value.strip() and multa_valor is None:
+                mostrar_snack("Multa por dia deve ser um número válido.", ft.Colors.RED_700)
                 return
             prateleira["nome"] = prateleira_nome.value.strip()
             prateleira["dias_e_prazo"] = int(dias)
-            prateleira["multa_por_dia"] = float(prateleira_multa.value.strip().replace(",", ".")) if prateleira_multa.value.strip() else 1.0
-            prateleira_nome.value = ""
-            prateleira_dias.value = ""
-            prateleira_multa.value = ""
-            estado["prateleira_edit_id"] = None
+            prateleira["multa_por_dia"] = multa_valor if multa_valor is not None else 1.0
+            limpar_form_prateleira()
             salvar_e_atualizar()
             mostrar_snack("Prateleira atualizada.")
 
@@ -492,6 +542,8 @@ def main(page: ft.Page):
                 mostrar_snack("Não pode deletar prateleira que tem livros cadastrados.", ft.Colors.RED_700)
                 return
             dados["prateleiras"][:] = [p for p in dados["prateleiras"] if p["id"] != prateleira_id]
+            if prateleira_id == estado["prateleira_edit_id"]:
+                limpar_form_prateleira()
             salvar_e_atualizar()
             mostrar_snack("Prateleira removida.")
 
@@ -527,13 +579,16 @@ def main(page: ft.Page):
             )
 
         lista = ft.Column([
-            ft.Row([
+            criar_layout_form([
                 prateleira_nome,
                 prateleira_dias,
                 prateleira_multa,
                 criar_botao_primario("Cadastrar", ft.Icons.ADD, adicionar_prateleira, bgcolor=ft.Colors.GREEN),
             ], spacing=10),
-            ft.Row([btn_salvar, criar_botao_secundario("Cancelar", ft.Icons.CANCEL, cancelar_edit, color=ft.Colors.GREY)], spacing=10),
+            criar_layout_form([
+                btn_salvar,
+                criar_botao_secundario("Cancelar", ft.Icons.CANCEL, cancelar_edit, color=ft.Colors.GREY),
+            ], spacing=10),
             ft.Divider(),
             ft.Text("Prateleiras cadastradas", weight="bold"),
             *linhas,
@@ -541,6 +596,9 @@ def main(page: ft.Page):
         return ft.ListView([lista], expand=True, padding=20, spacing=20)
 
     def view_livros():
+        if estado["livro_edit_id"] and not obter_por_id(dados["livros"], estado["livro_edit_id"]):
+            limpar_form_livro()
+
         def adicionar_livro(e):
             titulo = livro_titulo.value.strip()
             autor = livro_autor.value.strip()
@@ -575,14 +633,12 @@ def main(page: ft.Page):
                 return
             livro = obter_por_id(dados["livros"], estado["livro_edit_id"])
             if not livro:
+                limpar_form_livro()
                 return
             livro["titulo"] = livro_titulo.value.strip()
             livro["autor"] = livro_autor.value.strip()
             livro["prateleira_id"] = int(livro_prateleira.value) if livro_prateleira.value else livro["prateleira_id"]
-            livro_titulo.value = ""
-            livro_autor.value = ""
-            livro_prateleira.value = None
-            estado["livro_edit_id"] = None
+            limpar_form_livro()
             salvar_e_atualizar()
             mostrar_snack("Livro atualizado.")
 
@@ -595,10 +651,7 @@ def main(page: ft.Page):
             mostrar_snack("Livro removido.")
 
         def cancelar_edit(e):
-            livro_titulo.value = ""
-            livro_autor.value = ""
-            livro_prateleira.value = None
-            estado["livro_edit_id"] = None
+            limpar_form_livro()
             route_change() # ── ALTERADO: Redesenha a tela limpando o estado de edição
 
         # Otimização: O botão de salvar só ativa a função se houver algo sendo editado
@@ -629,13 +682,16 @@ def main(page: ft.Page):
             )
 
         lista = ft.Column([
-            ft.Row([
+            criar_layout_form([
                 livro_titulo,
                 livro_autor,
                 livro_prateleira,
                 criar_botao_primario("Cadastrar", ft.Icons.ADD, adicionar_livro, bgcolor=ft.Colors.GREEN),
             ], spacing=10),
-            ft.Row([btn_salvar, criar_botao_secundario("Cancelar", ft.Icons.CANCEL, cancelar_edit, color=ft.Colors.GREY)], spacing=10),
+            criar_layout_form([
+                btn_salvar,
+                criar_botao_secundario("Cancelar", ft.Icons.CANCEL, cancelar_edit, color=ft.Colors.GREY),
+            ], spacing=10),
             ft.Divider(),
             ft.Text("Livros cadastrados", weight="bold"),
             *linhas,
@@ -729,12 +785,12 @@ def main(page: ft.Page):
                         ft.Text(f"Devolução prevista: {emprestimo['data_entrega']}", size=11),
                     ], spacing=2),
                     trailing=criar_botao_primario("Devolver", ft.Icons.UNDO, lambda e, eid=emprestimo['id']: acionar_devolucao(eid), bgcolor=ft.Colors.ORANGE)
-                    if emprestimo["status"] in ["Aberto", "Atrasado"] else ft.Text("Concluído", color=ft.Colors.GREEN),
+                    if emprestimo["status"] in [STATUS_ABERTO, STATUS_ATRASADO] else ft.Text("Concluído", color=ft.Colors.GREEN),
                 )
             )
 
         lista = ft.Column([
-            ft.Row([
+            criar_layout_form([
                 emprestimo_cliente,
                 emprestimo_livro,
                 criar_botao_primario("Cadastrar", ft.Icons.ADD, cadastrar_emprestimo, bgcolor=ft.Colors.GREEN),
@@ -805,7 +861,7 @@ def main(page: ft.Page):
                 ft.Text(label, size=14, color=ft.Colors.BLUE_700 if ativo else ft.Colors.BLACK, weight="bold" if ativo else "normal"),
             ], spacing=12, tight=True),
             padding=ft.Padding(12, 10, 12, 10),
-            border_radius=8,
+            border_radius=BORDER_RADIUS,
             bgcolor=ft.Colors.BLUE_50 if ativo else ft.Colors.TRANSPARENT,
             on_click=on_click,
         )
