@@ -23,7 +23,7 @@ def setup_environment():
     print("📦 Instalando Flet e dependências...")
     try:
         # Instala o flet básico
-        subprocess.check_call([pip_exe, "install", "flet"])
+        subprocess.check_call([pip_exe, "install", "flet==0.28.3"])
         
         # Instala do requirements.txt se ele existir na sua pasta
         if os.path.exists("requirements.txt"):

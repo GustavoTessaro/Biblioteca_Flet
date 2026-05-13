@@ -235,28 +235,30 @@ def main(page: ft.Page):
     def navegar(rota: str):
         page.go(rota)
 
-    def criar_card(titulo: str, conteudo: ft.Control, p: dict):
+    def criar_card(titulo: str, conteudo: ft.Control, p: dict | None = None):
+        if p is None:
+            p = paleta(estado["dark_mode"])
 
         return ft.Container(
-        content=ft.Column([
-            ft.Text(
-                titulo,
-                size=13,
-                weight="bold",
-                color=p["txt"]
+            content=ft.Column([
+                ft.Text(
+                    titulo,
+                    size=13,
+                    weight="bold",
+                    color=p["txt"]
+                ),
+                conteudo,
+            ]),
+            padding=16,
+            bgcolor=p["bg_card"],
+            border=ft.border.all(1, p["border"]),
+            border_radius=12,
+            shadow=ft.BoxShadow(
+                blur_radius=8,
+                color=p["shadow"],
+                offset=ft.Offset(0, 2),
             ),
-            conteudo,
-        ]),
-        padding=16,
-        bgcolor=p["bg_card"],
-        border=ft.Border.all(1, p["border"]),
-        border_radius=12,
-        shadow=ft.BoxShadow(
-            blur_radius=8,
-            color=p["shadow"],
-            offset=ft.Offset(0, 2),
-        ),
-    )
+        )
 
     def criar_botao_primario(texto: str, icone, on_click, expand=False, bgcolor=ft.Colors.BLUE_700, color=ft.Colors.WHITE):
         return ft.ElevatedButton(  # <── Alterado para ElevatedButton
@@ -832,7 +834,7 @@ def main(page: ft.Page):
 
         return ft.Container(
             width=215,
-            bgcolor=ft.Colors.BLUE_50 / 3, # Deixa um fundo cinza/azul bem suave na barra lateral
+            bgcolor=ft.Colors.BLUE_50,
             border=ft.border.only(right=ft.BorderSide(1, ft.Colors.GREY_300)),
             padding=12,
             content=ft.Column([
