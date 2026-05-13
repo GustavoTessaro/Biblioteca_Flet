@@ -7,6 +7,7 @@ import flet as ft
 DATA_FILE = "biblioteca_data.json"
 BREAKPOINT_MOBILE = 600
 
+#region
 
 def carregar_dados() -> dict:
     if not os.path.exists(DATA_FILE):
@@ -120,8 +121,10 @@ def cliente_tem_emprestimos_ativos(cliente_id: int, dados: dict) -> bool:
         for emprestimo in dados["emprestimos"]
     )
 
+#endregion
 
 def main(page: ft.Page):
+    #region Configurações da Página e Estado
     page.title = "Biblioteca Flet"
     page.padding = 0
     page.spacing = 0
@@ -139,8 +142,10 @@ def main(page: ft.Page):
         "prateleira_edit_id": None,
         "livro_edit_id": None,
     }
+    
+    #endregion
 
-    # TextField para clientes (incluindo telefone)
+    # TextField para clientes
     cliente_nome = ft.TextField(label="Nome do cliente", expand=True, border_radius=8)
     cliente_email = ft.TextField(label="E-mail do cliente", expand=True, border_radius=8)
     cliente_telefone = ft.TextField(label="Telefone", expand=True, border_radius=8)
