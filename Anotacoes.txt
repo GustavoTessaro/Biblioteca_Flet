@@ -1,0 +1,8 @@
+arrumar no estado:
+
+estado = {
+        "dark_mode":      False,  # False = tema claro | True = tema escuro
+        "mobile":         False,  # False = layout desktop | True = layout mobile
+    }
+
+    verificar o telefone do cliente TXfield se tem como digitar apenas numeros e formatar igual ao email

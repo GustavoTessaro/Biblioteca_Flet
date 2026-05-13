@@ -147,23 +147,23 @@ def main(page: ft.Page):
     #endregion
 
     # TextField para clientes
-    cliente_nome = ft.TextField(label="Nome do cliente", expand=True, border_radius=8)
-    cliente_email = ft.TextField(label="E-mail do cliente", expand=True, border_radius=8)
-    cliente_telefone = ft.TextField(label="Telefone", expand=True, border_radius=8)
+    cliente_nome = ft.TextField(label="Nome do cliente", hint_text="Ex: João Alberto",  prefix_icon=ft.Icons.PERSON_OUTLINE, expand=True, border_radius=8)
+    cliente_email = ft.TextField(label="E-mail do cliente", hint_text="Ex: joao@email.com", prefix_icon=ft.Icons.EMAIL_OUTLINED, expand=True, border_radius=8, keyboard_type=ft.KeyboardType.EMAIL)
+    cliente_telefone = ft.TextField(label="Telefone", hint_text="Ex: (49) 9 9999-9999", prefix_icon=ft.Icons.PHONE_OUTLINED, expand=True, border_radius=8, keyboard_type=ft.KeyboardType.PHONE)
 
     # TextField para prateleiras
-    prateleira_nome = ft.TextField(label="Nome da prateleira", expand=True, border_radius=8)
-    prateleira_dias = ft.TextField(label="Dias de empréstimo", hint_text="7", expand=True, border_radius=8)
-    prateleira_multa = ft.TextField(label="Multa por dia", hint_text="1.5", expand=True, border_radius=8)
+    prateleira_nome = ft.TextField(label="Nome da prateleira", hint_text="Ex: Terror", prefix_icon=ft.Icons.TABLE_ROWS_OUTLINED, expand=True, border_radius=8)
+    prateleira_dias = ft.TextField(label="Dias de empréstimo", hint_text="Ex: 7", prefix_icon=ft.Icons.CALENDAR_TODAY_OUTLINED, expand=True, border_radius=8)
+    prateleira_multa = ft.TextField(label="Multa por dia", hint_text="Ex: 1.5", prefix_icon=ft.Icons.MONETIZATION_ON_OUTLINED, expand=True, border_radius=8)
 
     # TextField para livros
-    livro_titulo = ft.TextField(label="Título do livro", expand=True, border_radius=8)
-    livro_autor = ft.TextField(label="Autor", expand=True, border_radius=8)
-    livro_prateleira = ft.Dropdown(label="Prateleira", expand=True)
+    livro_titulo = ft.TextField(label="Título do livro", hint_text="Ex: Senhor dos Anéis", prefix_icon=ft.Icons.BOOK_OUTLINED, expand=True, border_radius=8)
+    livro_autor = ft.TextField(label="Autor", hint_text="Ex: J.R.R. Tolkien", prefix_icon=ft.Icons.CREATE_OUTLINED, expand=True, border_radius=8)
+    livro_prateleira = ft.Dropdown(label="Prateleira", prefix_icon=ft.Icons.LAYERS_OUTLINED, expand=True)
 
     # Dropdown para empréstimos
-    emprestimo_cliente = ft.Dropdown(label="Cliente", expand=True)
-    emprestimo_livro = ft.Dropdown(label="Livro disponível", expand=True)
+    emprestimo_cliente = ft.Dropdown(label="Cliente", prefix_icon=ft.Icons.ASSIGNMENT_IND_OUTLINE, expand=True)
+    emprestimo_livro = ft.Dropdown(label="Livro disponível", prefix_icon=ft.Icons.MENU_BOOK_OUTLINED, expand=True)
 
     def mostrar_snack(msg: str, cor=ft.Colors.GREEN_700):
         snackbar = ft.SnackBar(content=ft.Text(msg, color=ft.Colors.WHITE), bgcolor=cor, duration=2500)
