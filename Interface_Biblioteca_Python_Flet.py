@@ -220,13 +220,26 @@ def main(page: ft.Page):
 
     #endregion
 
-    def mostrar_snack(msg: str, cor=ft.Colors.GREEN_700):
-        snackbar = ft.SnackBar(content=ft.Text(msg, color=ft.Colors.WHITE), bgcolor=cor, duration=2500)
-        snackbar.open = True
-        page.snack_bar = snackbar
+    async def mostrar_snack(msg: str, cor=ft.Colors.GREEN_700):
+
+        snack = ft.SnackBar(
+            content=ft.Text(
+                msg,
+                color=ft.Colors.WHITE
+            ),
+            bgcolor=cor,
+            duration=2500,
+        )
+
+        page.overlay.clear()
+
+        page.overlay.append(snack)
+
+        snack.open = True
+
         page.update()
-        snackbar.open = True
-        page.update()
+
+        await asyncio.sleep(1.2)
 
     def atualizar_dropdowns():
         livro_prateleira.options = [
@@ -243,13 +256,18 @@ def main(page: ft.Page):
             if not livro_esta_emprestado(livro["id"], dados)
         ]
 
-    def salvar_e_atualizar(msg: str = None):
+    async def salvar_e_atualizar(msg: str = None):
+
         salvar_dados(dados)
+
         verificar_atrasos_e_multas(dados)
+
         atualizar_dropdowns()
-        route_change()
+
         if msg:
-            mostrar_snack(msg)
+            await mostrar_snack(msg)
+
+        route_change()
 
     def cliente_existe(nome: str, email: str, telefone: str, exclude_id: int | None = None) -> bool:
         nome = nome.strip().lower()
@@ -418,15 +436,15 @@ def main(page: ft.Page):
         if estado["cliente_edit_id"] and not obter_por_id(dados["clientes"], estado["cliente_edit_id"]):
             limpar_form_cliente()
 
-        def adicionar_cliente(e):
+        async def adicionar_cliente(e):
             nome = cliente_nome.value.strip()
             email = cliente_email.value.strip()
             telefone = cliente_telefone.value.strip()
             if not nome or not email or not telefone:
-                mostrar_snack("Todos os campos são obrigatórios.", ft.Colors.RED_700)
+                await mostrar_snack("Todos os campos são obrigatórios.", ft.Colors.RED_700)
                 return
             if cliente_existe(nome, email, telefone):
-                mostrar_snack("Já existe um cliente com nome, e-mail ou telefone iguais.", ft.Colors.RED_700)
+                await mostrar_snack("Já existe um cliente com nome, e-mail ou telefone iguais.", ft.Colors.RED_700)
                 return
             dados["clientes"].append({
                 "id": proximo_id(dados["clientes"]),
@@ -435,7 +453,7 @@ def main(page: ft.Page):
                 "telefone": telefone,
             })
             limpar_form_cliente()
-            salvar_e_atualizar("Cliente cadastrado com sucesso.")
+            await salvar_e_atualizar("Cliente cadastrado com sucesso.")
 
         def editar_cliente(cliente_id):
             cliente = obter_por_id(dados["clientes"], cliente_id)
@@ -447,7 +465,7 @@ def main(page: ft.Page):
             estado["cliente_edit_id"] = cliente_id
             route_change()
 
-        def salvar_cliente_edit(e):
+        async def salvar_cliente_edit(e):
             if not estado["cliente_edit_id"]:
                 return
             cliente = obter_por_id(dados["clientes"], estado["cliente_edit_id"])
@@ -458,25 +476,25 @@ def main(page: ft.Page):
             email = cliente_email.value.strip()
             telefone = cliente_telefone.value.strip()
             if not nome or not email or not telefone:
-                mostrar_snack("Todos os campos são obrigatórios.", ft.Colors.RED_700)
+                await mostrar_snack("Todos os campos são obrigatórios.", ft.Colors.RED_700)
                 return
             if cliente_existe(nome, email, telefone, exclude_id=cliente["id"]):
-                mostrar_snack("Já existe um cliente com nome, e-mail ou telefone iguais.", ft.Colors.RED_700)
+                await mostrar_snack("Já existe um cliente com nome, e-mail ou telefone iguais.", ft.Colors.RED_700)
                 return
             cliente["nome"] = nome
             cliente["email"] = email
             cliente["telefone"] = telefone
             limpar_form_cliente()
-            salvar_e_atualizar("Cliente atualizado.")
+            await salvar_e_atualizar("Cliente atualizado.")
 
-        def deletar_cliente(cliente_id):
+        async def deletar_cliente(cliente_id):
             if cliente_tem_emprestimos_ativos(cliente_id, dados):
-                mostrar_snack("Não pode deletar cliente com empréstimos ativos.", ft.Colors.RED_700)
+                await mostrar_snack("Não pode deletar cliente com empréstimos ativos.", ft.Colors.RED_700)
                 return
             dados["clientes"][:] = [c for c in dados["clientes"] if c["id"] != cliente_id]
             if cliente_id == estado["cliente_edit_id"]:
                 limpar_form_cliente()
-            salvar_e_atualizar("Cliente removido.")
+            await salvar_e_atualizar("Cliente removido.")
 
         def cancelar_edit(e):
             limpar_form_cliente()
@@ -500,7 +518,7 @@ def main(page: ft.Page):
                     ], spacing=4),
                     trailing=ft.Row([
                         criar_botao_primario("", ft.Icons.EDIT, lambda e, cid=cliente["id"]: editar_cliente(cid), bgcolor=ft.Colors.BLUE),
-                        criar_botao_primario("", ft.Icons.DELETE, lambda e, cid=cliente["id"]: deletar_cliente(cid), bgcolor=ft.Colors.RED),
+                        criar_botao_primario( "", ft.Icons.DELETE, lambda e, cid=cliente["id"]: asyncio.create_task(deletar_cliente(cid)), bgcolor=ft.Colors.RED),
                     ], spacing=5, tight=True),
                     is_three_line=True,
                     min_vertical_padding=8,
@@ -528,22 +546,22 @@ def main(page: ft.Page):
         if estado["prateleira_edit_id"] and not obter_por_id(dados["prateleiras"], estado["prateleira_edit_id"]):
             limpar_form_prateleira()
 
-        def adicionar_prateleira(e):
+        async def adicionar_prateleira(e):
             nome = prateleira_nome.value.strip()
             dias = prateleira_dias.value.strip()
             multa_texto = prateleira_multa.value.strip()
             multa_valor = parse_float(prateleira_multa.value)
             if not nome or not dias or not multa_texto:
-                mostrar_snack("Todos os campos são obrigatórios.", ft.Colors.RED_700)
+                await mostrar_snack("Todos os campos são obrigatórios.", ft.Colors.RED_700)
                 return
             if not dias.isdigit() or int(dias) <= 0:
-                mostrar_snack("Preencha nome e dias de empréstimo válidos.", ft.Colors.RED_700)
+                await mostrar_snack("Preencha nome e dias de empréstimo válidos.", ft.Colors.RED_700)
                 return
             if multa_valor is None:
-                mostrar_snack("Multa por dia deve ser um número válido.", ft.Colors.RED_700)
+                await mostrar_snack("Multa por dia deve ser um número válido.", ft.Colors.RED_700)
                 return
             if prateleira_existe(nome, int(dias), multa_valor):
-                mostrar_snack("Já existe uma prateleira com esses dados.", ft.Colors.RED_700)
+                await mostrar_snack("Já existe uma prateleira com esses dados.", ft.Colors.RED_700)
                 return
             dados["prateleiras"].append({
                 "id": proximo_id(dados["prateleiras"]),
@@ -552,7 +570,7 @@ def main(page: ft.Page):
                 "multa_por_dia": multa_valor,
             })
             limpar_form_prateleira()
-            salvar_e_atualizar("Prateleira cadastrada.")
+            await salvar_e_atualizar("Prateleira cadastrada.")
 
         def editar_prateleira(prateleira_id):
             prateleira = obter_por_id(dados["prateleiras"], prateleira_id)
@@ -564,7 +582,7 @@ def main(page: ft.Page):
             estado["prateleira_edit_id"] = prateleira_id
             route_change()
 
-        def salvar_prateleira_edit(e):
+        async def salvar_prateleira_edit(e):
             if not estado["prateleira_edit_id"]:
                 return
             prateleira = obter_por_id(dados["prateleiras"], estado["prateleira_edit_id"])
@@ -576,31 +594,31 @@ def main(page: ft.Page):
             multa_texto = prateleira_multa.value.strip()
             multa_valor = parse_float(prateleira_multa.value)
             if not nome or not dias or not multa_texto:
-                mostrar_snack("Todos os campos são obrigatórios.", ft.Colors.RED_700)
+                await mostrar_snack("Todos os campos são obrigatórios.", ft.Colors.RED_700)
                 return
             if not dias.isdigit() or int(dias) <= 0:
-                mostrar_snack("Dias deve ser um número válido.", ft.Colors.RED_700)
+                await mostrar_snack("Dias deve ser um número válido.", ft.Colors.RED_700)
                 return
             if multa_valor is None:
-                mostrar_snack("Multa por dia deve ser um número válido.", ft.Colors.RED_700)
+                await mostrar_snack("Multa por dia deve ser um número válido.", ft.Colors.RED_700)
                 return
             if prateleira_existe(nome, int(dias), multa_valor, exclude_id=prateleira["id"]):
-                mostrar_snack("Já existe uma prateleira com esses dados.", ft.Colors.RED_700)
+                await mostrar_snack("Já existe uma prateleira com esses dados.", ft.Colors.RED_700)
                 return
             prateleira["nome"] = nome
             prateleira["dias_e_prazo"] = int(dias)
             prateleira["multa_por_dia"] = multa_valor
             limpar_form_prateleira()
-            salvar_e_atualizar("Prateleira atualizada.")
+            await salvar_e_atualizar("Prateleira atualizada.")
 
-        def deletar_prateleira(prateleira_id):
+        async def deletar_prateleira(prateleira_id):
             if prateleira_tem_livros(prateleira_id, dados):
-                mostrar_snack("Não pode deletar prateleira que tem livros cadastrados.", ft.Colors.RED_700)
+                await mostrar_snack("Não pode deletar prateleira que tem livros cadastrados.", ft.Colors.RED_700)
                 return
             dados["prateleiras"][:] = [p for p in dados["prateleiras"] if p["id"] != prateleira_id]
             if prateleira_id == estado["prateleira_edit_id"]:
                 limpar_form_prateleira()
-            salvar_e_atualizar("Prateleira removida.")
+            await salvar_e_atualizar("Prateleira removida.")
 
         def cancelar_edit(e):
             limpar_form_prateleira()
@@ -624,7 +642,7 @@ def main(page: ft.Page):
                     ),
                     trailing=ft.Row([
                         criar_botao_primario("", ft.Icons.EDIT, lambda e, pid=prateleira["id"]: editar_prateleira(pid), bgcolor=ft.Colors.BLUE),
-                        criar_botao_primario("", ft.Icons.DELETE, lambda e, pid=prateleira["id"]: deletar_prateleira(pid), bgcolor=ft.Colors.RED),
+                        criar_botao_primario("", ft.Icons.DELETE, lambda e, pid=prateleira["id"]: asyncio.create_task(deletar_prateleira(pid)), bgcolor=ft.Colors.RED),
                     ], spacing=5, tight=True),
                     min_vertical_padding=8,
                 )
@@ -651,17 +669,17 @@ def main(page: ft.Page):
         if estado["livro_edit_id"] and not obter_por_id(dados["livros"], estado["livro_edit_id"]):
             limpar_form_livro()
 
-        def adicionar_livro(e):
+        async def adicionar_livro(e):
             titulo = livro_titulo.value.strip()
             autor = livro_autor.value.strip()
             prateleira_id = int(livro_prateleira.value) if livro_prateleira.value else None
             if not titulo or not autor or prateleira_id is None:
-                mostrar_snack("Todos os campos são obrigatórios.", ft.Colors.RED_700)
+                await mostrar_snack("Todos os campos são obrigatórios.", ft.Colors.RED_700)
                 return
             if livro_existente:
                 livro_existente["quantidade"] = livro_existente.get("quantidade", 1) + 1
                 limpar_form_livro()
-                salvar_e_atualizar(f"Livro existente encontrado. Quantidade atualizada para {livro_existente['quantidade']}.")
+                await salvar_e_atualizar(f"Livro existente encontrado. Quantidade atualizada para {livro_existente['quantidade']}.")
                 return
             dados["livros"].append({
                 "id": proximo_id(dados["livros"]),
@@ -671,7 +689,7 @@ def main(page: ft.Page):
                 "quantidade": 1,
             })
             limpar_form_livro()
-            salvar_e_atualizar("Livro cadastrado.")
+            await salvar_e_atualizar("Livro cadastrado.")
 
         def editar_livro(livro_id):
             livro = obter_por_id(dados["livros"], livro_id)
@@ -683,7 +701,7 @@ def main(page: ft.Page):
             estado["livro_edit_id"] = livro_id
             route_change() # ── ADICIONADO: Atualiza a tela para mudar o botão Salvar para Laranja
 
-        def salvar_livro_edit(e):
+        async def salvar_livro_edit(e):
             if not estado["livro_edit_id"]:
                 return
             livro = obter_por_id(dados["livros"], estado["livro_edit_id"])
@@ -694,40 +712,40 @@ def main(page: ft.Page):
             autor = livro_autor.value.strip()
             prateleira_id = int(livro_prateleira.value) if livro_prateleira.value else None
             if not titulo or not autor or prateleira_id is None:
-                mostrar_snack("Todos os campos são obrigatórios.", ft.Colors.RED_700)
+                await mostrar_snack("Todos os campos são obrigatórios.", ft.Colors.RED_700)
                 return
             if obter_livro_por_atributos(titulo, autor, prateleira_id, exclude_id=livro["id"]):
-                mostrar_snack("Já existe um livro com esses dados.", ft.Colors.RED_700)
+                await mostrar_snack("Já existe um livro com esses dados.", ft.Colors.RED_700)
                 return
             livro["titulo"] = titulo
             livro["autor"] = autor
             livro["prateleira_id"] = prateleira_id
             limpar_form_livro()
-            salvar_e_atualizar("Livro atualizado.")
+            await salvar_e_atualizar("Livro atualizado.")
 
-        def deletar_livro(livro_id):
+        async def deletar_livro(livro_id):
             if livro_esta_emprestado(livro_id, dados) > 0:
-                mostrar_snack("Não pode deletar livro que está emprestado.", ft.Colors.RED_700)
+                await mostrar_snack("Não pode deletar livro que está emprestado.", ft.Colors.RED_700)
                 return
             dados["livros"][:] = [l for l in dados["livros"] if l["id"] != livro_id]
             if livro_id == estado["livro_edit_id"]:
                 limpar_form_livro()
-            salvar_e_atualizar("Livro removido.")
+            await salvar_e_atualizar("Livro removido.")
 
-        def aumentar_quantidade(livro_id):
+        async def aumentar_quantidade(livro_id):
             livro = obter_por_id(dados["livros"], livro_id)
             if livro:
                 livro["quantidade"] = livro.get("quantidade", 1) + 1
-                salvar_e_atualizar(f"Quantidade atualizada: {livro['quantidade']}")
+                await salvar_e_atualizar(f"Quantidade atualizada: {livro['quantidade']}")
 
-        def diminuir_quantidade(livro_id):
+        async def diminuir_quantidade(livro_id):
             livro = obter_por_id(dados["livros"], livro_id)
             if livro:
                 if livro.get("quantidade", 1) <= 1:
-                    mostrar_snack("Quantidade mínima é 1. Use excluir para remover o livro.", ft.Colors.RED_700)
+                    await mostrar_snack("Quantidade mínima é 1. Use excluir para remover o livro.", ft.Colors.RED_700)
                     return
                 livro["quantidade"] -= 1
-                salvar_e_atualizar(f"Quantidade atualizada: {livro['quantidade']}")
+                await salvar_e_atualizar(f"Quantidade atualizada: {livro['quantidade']}")
 
         def cancelar_edit(e):
             limpar_form_livro()
@@ -760,7 +778,7 @@ def main(page: ft.Page):
                         criar_botao_primario("", ft.Icons.ADD, lambda e, lid=livro["id"]: aumentar_quantidade(lid), bgcolor=ft.Colors.BLUE),
                         criar_botao_primario("", ft.Icons.REMOVE, lambda e, lid=livro["id"]: diminuir_quantidade(lid), bgcolor=ft.Colors.GREY),
                         criar_botao_primario("", ft.Icons.EDIT, lambda e, lid=livro["id"]: editar_livro(lid), bgcolor=ft.Colors.BLUE),
-                        criar_botao_primario("", ft.Icons.DELETE, lambda e, lid=livro["id"]: deletar_livro(lid), bgcolor=ft.Colors.RED) if not emprestado else ft.Container(),
+                        criar_botao_primario("", ft.Icons.DELETE, lambda e, lid=livro["id"]: asyncio.create_task(deletar_livro(lid)), bgcolor=ft.Colors.RED) if not emprestado else ft.Container(),
                     ], spacing=5, tight=True), # ── ADICIONADO: tight=True evita bugs de tamanho na linha de ações
                 )
             )
@@ -783,21 +801,21 @@ def main(page: ft.Page):
         return ft.ListView([lista], expand=True, padding=20, spacing=20)
 
     def view_emprestimos():
-        def cadastrar_emprestimo(e):
+        async def cadastrar_emprestimo(e):
             if not emprestimo_cliente.value or not emprestimo_livro.value:
-                mostrar_snack("Escolha cliente e livro.", ft.Colors.RED_700)
+                await mostrar_snack("Escolha cliente e livro.", ft.Colors.RED_700)
                 return
             cliente_id = int(emprestimo_cliente.value)
             livro_id = int(emprestimo_livro.value)
             livro = obter_por_id(dados["livros"], livro_id)
             prateleira = obter_por_id(dados["prateleiras"], livro["prateleira_id"]) if livro else None
             if not livro or not prateleira:
-                mostrar_snack("Livro ou prateleira inválidos.", ft.Colors.RED_700)
+                await mostrar_snack("Livro ou prateleira inválidos.", ft.Colors.RED_700)
                 return
             emprestimos_abertos = livro_esta_emprestado(livro_id, dados)
             quantidade = livro.get("quantidade", 1)
             if emprestimos_abertos >= quantidade:
-                mostrar_snack("Não há cópias disponíveis deste livro.", ft.Colors.RED_700)
+                await mostrar_snack("Não há cópias disponíveis deste livro.", ft.Colors.RED_700)
                 return
 
             hoje = date.today()
@@ -811,7 +829,7 @@ def main(page: ft.Page):
             })
             emprestimo_cliente.value = None
             emprestimo_livro.value = None
-            salvar_e_atualizar("Empréstimo cadastrado.")
+            await salvar_e_atualizar("Empréstimo cadastrado.")
 
         def acionar_devolucao(emprestimo_id):
             emprestimo = obter_por_id(dados["emprestimos"], emprestimo_id)
@@ -845,7 +863,7 @@ def main(page: ft.Page):
             page.update()
             navegar("/multas")
 
-        def finalizar_devolucao(e, emprestimo_id, multa_paga, dlg):
+        async def finalizar_devolucao(e, emprestimo_id, multa_paga, dlg):
             emprestimo = obter_por_id(dados["emprestimos"], emprestimo_id)
             if emprestimo:
                 emprestimo["status"] = "Entregue"
@@ -856,7 +874,7 @@ def main(page: ft.Page):
                 if dlg:
                     dlg.open = False
                 
-                salvar_e_atualizar("Devolução registrada com sucesso.")
+                await salvar_e_atualizar("Devolução registrada com sucesso.")
 
         linhas = []
         for emprestimo in dados["emprestimos"]:
@@ -889,12 +907,12 @@ def main(page: ft.Page):
         return ft.ListView([lista], expand=True, padding=20, spacing=20)
 
     def view_multas():
-        def marcar_multa_paga(multa_id):
+        async def marcar_multa_paga(multa_id):
             multa = obter_por_id(dados["multas"], multa_id)
             if multa:
                 multa["status"] = "Pago"
-                salvar_e_atualizar()
-                mostrar_snack("Multa marcada como paga.")
+                await salvar_e_atualizar()
+                await mostrar_snack("Multa marcada como paga.")
 
         linhas = []
         for multa in dados["multas"]:
