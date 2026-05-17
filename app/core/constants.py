@@ -1,0 +1,8 @@
+DATA_FILE = "biblioteca_data.json"
+BREAKPOINT_MOBILE = 600
+
+BORDER_RADIUS = 8
+
+STATUS_ABERTO = "Aberto"
+STATUS_ATRASADO = "Atrasado"
+STATUS_ENTREGUE = "Entregue"
