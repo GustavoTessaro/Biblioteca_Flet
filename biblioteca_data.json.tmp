@@ -1,0 +1,127 @@
+{
+  "clientes": [
+    {
+      "id": 1,
+      "nome": "Teste",
+      "email": "teste@gmail.com",
+      "telefone": "234234234"
+    }
+  ],
+  "prateleiras": [
+    {
+      "id": 1,
+      "nome": "terror",
+      "dias_e_prazo": 2,
+      "multa_por_dia": 1.5
+    },
+    {
+      "id": 2,
+      "nome": "aventura",
+      "dias_e_prazo": 3,
+      "multa_por_dia": 1.0
+    }
+  ],
+  "livros": [],
+  "emprestimos": [
+    {
+      "id": 1,
+      "cliente_id": 1,
+      "livro_id": 1,
+      "status": "Entregue",
+      "data_emprestimo": "2026-05-13",
+      "data_entrega": "2026-05-15"
+    },
+    {
+      "id": 2,
+      "cliente_id": 2,
+      "livro_id": 1,
+      "status": "Entregue",
+      "data_emprestimo": "2026-05-13",
+      "data_entrega": "2026-05-10"
+    },
+    {
+      "id": 3,
+      "cliente_id": 3,
+      "livro_id": 2,
+      "status": "Entregue",
+      "data_emprestimo": "2026-05-13",
+      "data_entrega": "2026-05-10"
+    },
+    {
+      "id": 4,
+      "cliente_id": 1,
+      "livro_id": 2,
+      "status": "Entregue",
+      "data_emprestimo": "2026-05-13",
+      "data_entrega": "2026-05-15"
+    },
+    {
+      "id": 5,
+      "cliente_id": 1,
+      "livro_id": 1,
+      "status": "Entregue",
+      "data_emprestimo": "2026-05-13",
+      "data_entrega": "2026-05-15"
+    },
+    {
+      "id": 6,
+      "cliente_id": 2,
+      "livro_id": 1,
+      "status": "Entregue",
+      "data_emprestimo": "2026-05-13",
+      "data_entrega": "2026-05-15"
+    },
+    {
+      "id": 7,
+      "cliente_id": 3,
+      "livro_id": 2,
+      "status": "Entregue",
+      "data_emprestimo": "2026-05-13",
+      "data_entrega": "2026-05-15"
+    },
+    {
+      "id": 8,
+      "cliente_id": 1,
+      "livro_id": 1,
+      "status": "Entregue",
+      "data_emprestimo": "2026-05-13",
+      "data_entrega": "2026-05-15"
+    },
+    {
+      "id": 9,
+      "cliente_id": 3,
+      "livro_id": 1,
+      "status": "Entregue",
+      "data_emprestimo": "2026-05-14",
+      "data_entrega": "2026-05-16"
+    },
+    {
+      "id": 10,
+      "cliente_id": 3,
+      "livro_id": 1,
+      "status": "Entregue",
+      "data_emprestimo": "2026-05-14",
+      "data_entrega": "2026-05-16"
+    }
+  ],
+  "multas": [
+    {
+      "id": 1,
+      "emprestimo_id": 2,
+      "cliente_id": 2,
+      "livro_id": 1,
+      "dias_atraso": 3,
+      "valor": 4.5,
+      "status": "Pago"
+    },
+    {
+      "id": 2,
+      "emprestimo_id": 3,
+      "cliente_id": 3,
+      "livro_id": 2,
+      "dias_atraso": 3,
+      "valor": 4.5,
+      "status": "Pago"
+    }
+  ]
+}

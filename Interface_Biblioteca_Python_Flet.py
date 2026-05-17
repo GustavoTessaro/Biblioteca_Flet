@@ -15,7 +15,7 @@ STATUS_ATRASADO = "Atrasado"
 STATUS_ENTREGUE = "Entregue"
 STATUS_VALIDOS = [STATUS_ABERTO, STATUS_ATRASADO, STATUS_ENTREGUE]
 
-_indice_rotas = ["/", "/clientes", "/livros", "/emprestimos", "/multas"]
+_indice_rotas = ["/", "/clientes", "/livros", "/emprestimos", "/multas", "/prateleiras"]
 
 def paleta(dark: bool) -> dict:
 
@@ -282,13 +282,12 @@ def main(page: ft.Page):
             for c in dados["clientes"]
         )
 
-    def prateleira_existe(nome: str, dias_e_prazo: int, multa_por_dia: float, exclude_id: int | None = None) -> bool:
+    def prateleira_existe(nome: str, exclude_id: int | None = None) -> bool:
         nome = nome.strip().lower()
+
         return any(
-            p["id"] != exclude_id and (
-                p["nome"].strip().lower() == nome or
-                (p["dias_e_prazo"] == dias_e_prazo and abs(p["multa_por_dia"] - multa_por_dia) < 1e-9)
-            )
+            p["id"] != exclude_id and
+            p["nome"].strip().lower() == nome
             for p in dados["prateleiras"]
         )
 
@@ -562,7 +561,7 @@ def main(page: ft.Page):
             if multa_valor is None:
                 await mostrar_snack("Multa por dia deve ser um número válido.", ft.Colors.RED_700)
                 return
-            if prateleira_existe(nome, int(dias), multa_valor):
+            if prateleira_existe(nome):
                 await mostrar_snack("Já existe uma prateleira com esses dados.", ft.Colors.RED_700)
                 return
             dados["prateleiras"].append({
@@ -604,7 +603,7 @@ def main(page: ft.Page):
             if multa_valor is None:
                 await mostrar_snack("Multa por dia deve ser um número válido.", ft.Colors.RED_700)
                 return
-            if prateleira_existe(nome, int(dias), multa_valor, exclude_id=prateleira["id"]):
+            if prateleira_existe(nome, exclude_id=prateleira["id"]):
                 await mostrar_snack("Já existe uma prateleira com esses dados.", ft.Colors.RED_700)
                 return
             prateleira["nome"] = nome
@@ -680,6 +679,7 @@ def main(page: ft.Page):
             if not titulo or not autor or prateleira_id is None:
                 await mostrar_snack("Todos os campos são obrigatórios.", ft.Colors.RED_700)
                 return
+            livro_existente = obter_livro_por_atributos(titulo, autor, prateleira_id)
             if livro_existente:
                 livro_existente["quantidade"] = livro_existente.get("quantidade", 1) + 1
                 limpar_form_livro()
