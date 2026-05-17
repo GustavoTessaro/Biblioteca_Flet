@@ -763,6 +763,12 @@ def main(page: ft.Page):
             bgcolor=ft.Colors.ORANGE if estado["livro_edit_id"] else ft.Colors.GREY
         )
 
+        async def on_add(e, lid=livro["id"]):
+            await aumentar_quantidade(lid)
+
+        async def on_remove(e, lid=livro["id"]):
+            await diminuir_quantidade(lid)
+
         linhas = []
         for livro in dados["livros"]:
             async def on_delete_livro(e, lid=livro["id"]):
@@ -781,8 +787,8 @@ def main(page: ft.Page):
                     trailing=ft.Row([
                         ft.Text(f"Qty: {quantidade} (Disp: {quantidade - emprestimos_abertos})", size=12),
                         ft.Text("Disponível" if emprestimos_abertos < quantidade else "Emprestado", color=ft.Colors.GREEN if emprestimos_abertos < quantidade else ft.Colors.RED),
-                        criar_botao_primario("", ft.Icons.ADD, lambda e, lid=livro["id"]: aumentar_quantidade(lid), bgcolor=ft.Colors.BLUE),
-                        criar_botao_primario("", ft.Icons.REMOVE, lambda e, lid=livro["id"]: diminuir_quantidade(lid), bgcolor=ft.Colors.GREY),
+                        criar_botao_primario("",ft.Icons.ADD,on_add,bgcolor=ft.Colors.BLUE),
+                        criar_botao_primario("",ft.Icons.REMOVE,on_remove,bgcolor=ft.Colors.GREY),
                         criar_botao_primario("", ft.Icons.EDIT, lambda e, lid=livro["id"]: editar_livro(lid), bgcolor=ft.Colors.BLUE),
                         criar_botao_primario("", ft.Icons.DELETE, on_delete_livro, bgcolor=ft.Colors.RED) if not emprestado else ft.Container(),
                     ], spacing=5, tight=True), # ── ADICIONADO: tight=True evita bugs de tamanho na linha de ações
@@ -1047,7 +1053,6 @@ def main(page: ft.Page):
         idx = _indice_rotas.index(rota_atual) if rota_atual in _indice_rotas else 0
 
         def ao_mudar(e):
-            # Como a sua função navegar agora usa asyncio, chamamos via task
             navegar(_indice_rotas[e.control.selected_index])
 
         return ft.NavigationBar(
