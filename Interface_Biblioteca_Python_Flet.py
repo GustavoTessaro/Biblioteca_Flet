@@ -763,16 +763,14 @@ def main(page: ft.Page):
             bgcolor=ft.Colors.ORANGE if estado["livro_edit_id"] else ft.Colors.GREY
         )
 
-        async def on_add(e, lid=livro["id"]):
-            await aumentar_quantidade(lid)
-
-        async def on_remove(e, lid=livro["id"]):
-            await diminuir_quantidade(lid)
-
         linhas = []
         for livro in dados["livros"]:
             async def on_delete_livro(e, lid=livro["id"]):
                 await deletar_livro(lid)
+            async def on_add(e, lid=livro["id"]):
+                await aumentar_quantidade(lid)
+            async def on_remove(e, lid=livro["id"]):
+                await diminuir_quantidade(lid)
             emprestimos_abertos = livro_esta_emprestado(livro["id"], dados)
             quantidade = livro.get("quantidade", 1)
             emprestado = emprestimos_abertos >= quantidade
