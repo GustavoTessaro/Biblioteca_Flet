@@ -1,3 +1,9 @@
+import flet as ft
+
+from core.helpers import *
+from services.cliente_service import *
+from components.buttons import *
+
 def view_home(dados):
         total_clientes = len(dados["clientes"])
         total_prateleiras = len(dados["prateleiras"])

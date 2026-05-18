@@ -1,3 +1,11 @@
+import flet as ft
+
+from core.constants import BORDER_RADIUS
+
+BUTTON_SHAPE = ft.RoundedRectangleBorder(
+    radius=BORDER_RADIUS
+)
+
 def criar_botao_primario(texto: str, icone, on_click, expand=False, bgcolor=ft.Colors.BLUE_700, color=ft.Colors.WHITE):
         return ft.ElevatedButton(  # <── Alterado para ElevatedButton
             content=ft.Row([

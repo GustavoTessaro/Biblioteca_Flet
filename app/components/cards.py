@@ -1,3 +1,5 @@
+import flet as ft
+
 def criar_card(titulo: str, conteudo: ft.Control, p: dict):
         return ft.Container(
             content=ft.Column([

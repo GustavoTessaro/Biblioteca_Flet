@@ -1,3 +1,5 @@
+from datetime import date
+
 def formatar_data(valor: date) -> str:
     return valor.isoformat()
 

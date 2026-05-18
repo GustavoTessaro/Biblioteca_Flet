@@ -1,3 +1,11 @@
+from datetime import date
+
+from Interface_Biblioteca_Python_Flet import calcular_valor_multa
+from app.core.constants import STATUS_ABERTO, STATUS_ATRASADO, STATUS_ENTREGUE
+from app.core.helpers import obter_por_id, parse_data, proximo_id
+from app.data.storage import salvar_dados
+
+
 def obter_status_emprestimo(emprestimo: dict, hoje: date) -> str:
     if emprestimo["status"] == STATUS_ENTREGUE:
         return STATUS_ENTREGUE

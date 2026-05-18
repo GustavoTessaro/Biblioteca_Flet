@@ -18,7 +18,7 @@ from data.storage import carregar_dados, salvar_dados
 # SERVICES
 # =========================
 
-from services.cliente_service import cliente_esta_ativo
+from services.cliente_service import cliente_existe, cliente_tem_emprestimos_ativos
 from services.emprestimo_service import verificar_atrasos_e_multas, obter_status_emprestimo
 from services.livro_service import livro_esta_emprestado, obter_livro_por_atributos
 from services.prateleira_service import prateleira_existe
@@ -28,7 +28,7 @@ from services.prateleira_service import prateleira_existe
 # =========================
 
 from components.appbar import construir_appbar
-from components.buttons import botao_primario, botao_secundario
+from components.buttons import (botao_primario, botao_secundario)
 from components.cards import criar_card
 from components.menu import menu_lateral
 from components.navigation import navigation_bar_mobile

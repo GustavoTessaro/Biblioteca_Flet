@@ -1,3 +1,9 @@
+import flet as ft
+
+from core.helpers import *
+from services.cliente_service import *
+from components.buttons import *
+
 def view_prateleiras(page, dados, estado, route_change):
         if estado["prateleira_edit_id"] and not obter_por_id(dados["prateleiras"], estado["prateleira_edit_id"]):
             limpar_form_prateleira()

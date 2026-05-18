@@ -1,3 +1,6 @@
+from app.core.constants import STATUS_ABERTO, STATUS_ATRASADO
+
+
 def cliente_existe(dados, nome, email, telefone, exclude_id=None) -> bool:
         nome = nome.strip().lower()
         email = email.strip().lower()

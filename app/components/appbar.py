@@ -1,3 +1,7 @@
+import flet as ft
+
+from core.theme import paleta
+
 def toggle_theme(page, estado, route_change):
 
         estado["dark_mode"] = not estado["dark_mode"]

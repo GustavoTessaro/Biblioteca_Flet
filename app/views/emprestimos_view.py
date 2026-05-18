@@ -1,3 +1,9 @@
+import flet as ft
+
+from core.helpers import *
+from services.cliente_service import *
+from components.buttons import *
+
 def view_emprestimos(page, dados, estado, route_change, navegar):
         async def cadastrar_emprestimo(e):
             if not emprestimo_cliente.value or not emprestimo_livro.value:

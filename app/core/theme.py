@@ -1,3 +1,5 @@
+import flet as ft
+
 def paleta(dark: bool) -> dict:
 
     if dark:

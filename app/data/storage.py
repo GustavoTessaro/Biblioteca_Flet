@@ -1,3 +1,8 @@
+import json
+
+from app.core.constants import DATA_FILE
+
+
 def carregar_dados() -> dict:
     if not os.path.exists(DATA_FILE):
         return {

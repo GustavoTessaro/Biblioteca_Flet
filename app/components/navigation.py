@@ -1,3 +1,5 @@
+import flet as ft
+
 _indice_rotas = ["/", "/clientes", "/livros", "/emprestimos", "/multas", "/prateleiras"]
 
 def navigation_bar_mobile(estado, navegar):

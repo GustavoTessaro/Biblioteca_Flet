@@ -1,3 +1,5 @@
+import flet as ft
+
 def menu_lateral(estado, rotas_menu, navegar):
         rota = estado["rota"]
         
