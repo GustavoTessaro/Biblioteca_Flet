@@ -1,9 +1,6 @@
 _indice_rotas = ["/", "/clientes", "/livros", "/emprestimos", "/multas", "/prateleiras"]
 
-def navegar(rota: str):
-        page.go(rota)
-
-def navigation_bar_mobile():
+def navigation_bar_mobile(estado, navegar):
         rota_atual = estado["rota"]
         idx = _indice_rotas.index(rota_atual) if rota_atual in _indice_rotas else 0
 

@@ -1,4 +1,4 @@
-def menu_lateral():
+def menu_lateral(estado, rotas_menu, navegar):
         rota = estado["rota"]
         
         itens = [

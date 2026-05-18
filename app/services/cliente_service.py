@@ -1,4 +1,4 @@
-def cliente_existe(nome: str, email: str, telefone: str, exclude_id: int | None = None) -> bool:
+def cliente_existe(dados, nome, email, telefone, exclude_id=None) -> bool:
         nome = nome.strip().lower()
         email = email.strip().lower()
         telefone = telefone.strip()

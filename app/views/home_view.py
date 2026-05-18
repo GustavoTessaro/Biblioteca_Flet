@@ -1,4 +1,4 @@
-def view_home():
+def view_home(dados):
         total_clientes = len(dados["clientes"])
         total_prateleiras = len(dados["prateleiras"])
         total_livros = len(dados["livros"])

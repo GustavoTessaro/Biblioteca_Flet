@@ -1,4 +1,4 @@
-def prateleira_existe(nome: str, exclude_id: int | None = None) -> bool:
+def prateleira_existe(dados,) -> bool:
         nome = nome.strip().lower()
 
         return any(

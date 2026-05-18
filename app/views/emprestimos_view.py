@@ -1,4 +1,4 @@
-def view_emprestimos():
+def view_emprestimos(page, dados, estado, route_change, navegar):
         async def cadastrar_emprestimo(e):
             if not emprestimo_cliente.value or not emprestimo_livro.value:
                 await mostrar_snack("Escolha cliente e livro.", ft.Colors.RED_700)

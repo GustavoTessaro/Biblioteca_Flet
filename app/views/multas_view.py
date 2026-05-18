@@ -1,4 +1,4 @@
-def view_multas():
+def view_multas(page, dados, estado, route_change):
         async def marcar_multa_paga(multa_id):
             multa = obter_por_id(dados["multas"], multa_id)
             if multa:

@@ -1,7 +1,4 @@
-def criar_card(titulo: str, conteudo: ft.Control, p: dict | None = None):
-        if p is None:
-            p = paleta(estado["dark_mode"])
-
+def criar_card(titulo: str, conteudo: ft.Control, p: dict):
         return ft.Container(
             content=ft.Column([
                 ft.Text(

@@ -1,4 +1,4 @@
-def view_prateleiras():
+def view_prateleiras(page, dados, estado, route_change):
         if estado["prateleira_edit_id"] and not obter_por_id(dados["prateleiras"], estado["prateleira_edit_id"]):
             limpar_form_prateleira()
 

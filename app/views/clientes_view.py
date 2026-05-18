@@ -1,4 +1,4 @@
-def view_clientes():
+def view_clientes(page, dados, estado, route_change):
         if estado["cliente_edit_id"] and not obter_por_id(dados["clientes"], estado["cliente_edit_id"]):
             limpar_form_cliente()
 

@@ -1,4 +1,4 @@
-def toggle_theme():
+def toggle_theme(page, estado, route_change):
 
         estado["dark_mode"] = not estado["dark_mode"]
 
@@ -11,7 +11,7 @@ def toggle_theme():
         route_change()
 
 
-def construir_appbar():
+def construir_appbar(page, estado, titulos_paginas, route_change):
 
         p = paleta(estado["dark_mode"])
 
