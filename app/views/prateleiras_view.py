@@ -47,7 +47,7 @@ def view_prateleiras(page, dados, estado, route_change):
             if multa_valor is None:
                 await mostrar_snack("Multa por dia deve ser um número válido.", ft.Colors.RED_700)
                 return
-            if prateleira_existe(nome):
+            if prateleira_existe(dados, nome):
                 await mostrar_snack("Já existe uma prateleira com esses dados.", ft.Colors.RED_700)
                 return
             dados["prateleiras"].append({
@@ -89,7 +89,7 @@ def view_prateleiras(page, dados, estado, route_change):
             if multa_valor is None:
                 await mostrar_snack("Multa por dia deve ser um número válido.", ft.Colors.RED_700)
                 return
-            if prateleira_existe(nome, exclude_id=prateleira["id"]):
+            if prateleira_existe(dados, nome, exclude_id=prateleira["id"]):
                 await mostrar_snack("Já existe uma prateleira com esses dados.", ft.Colors.RED_700)
                 return
             prateleira["nome"] = nome

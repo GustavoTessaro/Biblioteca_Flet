@@ -55,9 +55,9 @@ def view_livros(page, dados, estado, route_change):
             autor = livro_autor.value.strip()
             prateleira_id = int(livro_prateleira.value) if livro_prateleira.value else None
             if not titulo or not autor or prateleira_id is None:
-                await mostrar_snack("Todos os campos são obrigatórios.", ft.Colors.RED_700)
+                await mostrar_snack(page, "Todos os campos são obrigatórios.", ft.Colors.RED_700)
                 return
-            livro_existente = obter_livro_por_atributos(titulo, autor, prateleira_id)
+            livro_existente = obter_livro_por_atributos(dados, titulo, autor, prateleira_id)
             if livro_existente:
                 livro_existente["quantidade"] = livro_existente.get("quantidade", 1) + 1
                 limpar_form_livro()
@@ -94,10 +94,10 @@ def view_livros(page, dados, estado, route_change):
             autor = livro_autor.value.strip()
             prateleira_id = int(livro_prateleira.value) if livro_prateleira.value else None
             if not titulo or not autor or prateleira_id is None:
-                await mostrar_snack("Todos os campos são obrigatórios.", ft.Colors.RED_700)
+                await mostrar_snack(page, "Todos os campos são obrigatórios.", ft.Colors.RED_700)
                 return
-            if obter_livro_por_atributos(titulo, autor, prateleira_id, exclude_id=livro["id"]):
-                await mostrar_snack("Já existe um livro com esses dados.", ft.Colors.RED_700)
+            if obter_livro_por_atributos(dados, titulo, autor, prateleira_id, exclude_id=livro["id"]):
+                await mostrar_snack(page, "Já existe um livro com esses dados.", ft.Colors.RED_700)
                 return
             livro["titulo"] = titulo
             livro["autor"] = autor
@@ -107,7 +107,7 @@ def view_livros(page, dados, estado, route_change):
 
         async def deletar_livro(livro_id):
             if livro_esta_emprestado(livro_id, dados) > 0:
-                await mostrar_snack("Não pode deletar livro que está emprestado.", ft.Colors.RED_700)
+                await mostrar_snack(page, "Não pode deletar livro que está emprestado.", ft.Colors.RED_700)
                 return
             dados["livros"][:] = [l for l in dados["livros"] if l["id"] != livro_id]
             if livro_id == estado["livro_edit_id"]:
@@ -124,7 +124,7 @@ def view_livros(page, dados, estado, route_change):
             livro = obter_por_id(dados["livros"], livro_id)
             if livro:
                 if livro.get("quantidade", 1) <= 1:
-                    await mostrar_snack("Quantidade mínima é 1. Use excluir para remover o livro.", ft.Colors.RED_700)
+                    await mostrar_snack(page, "Quantidade mínima é 1. Use excluir para remover o livro.", ft.Colors.RED_700)
                     return
                 livro["quantidade"] -= 1
                 await salvar_e_atualizar(page, dados, route_change, atualizar_dropdown_livros, f"Quantidade atualizada: {livro['quantidade']}")
