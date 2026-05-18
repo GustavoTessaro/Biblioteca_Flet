@@ -1,3 +1,16 @@
+def toggle_theme():
+
+        estado["dark_mode"] = not estado["dark_mode"]
+
+        page.theme_mode = (
+        ft.ThemeMode.DARK
+        if estado["dark_mode"]
+        else ft.ThemeMode.LIGHT
+        )
+
+        route_change()
+
+
 def construir_appbar():
 
         p = paleta(estado["dark_mode"])
