@@ -4,7 +4,7 @@ from core.helpers import *
 from services.cliente_service import *
 from components.buttons import *
 from components.layout import criar_layout_form
-from data.storage import salvar_e_atualizar
+from data.salvarAtualizar import salvar_e_atualizar
 from components.cards import mostrar_snack
 from services.livro_service import livro_esta_emprestado
 from datetime import timedelta
@@ -34,6 +34,18 @@ def view_emprestimos(page, dados, estado, route_change, navegar):
             ]
         )
         
+        def atualizar_dropdown_emprestimo():
+            emprestimo_cliente.options = [
+                ft.dropdown.Option(str(cliente["id"]), cliente["nome"])
+                for cliente in dados["clientes"]
+            ]
+            emprestimo_livro.options = [
+                ft.dropdown.Option(str(livro["id"]), f"{livro['titulo']} ({livro['autor']})")
+                for livro in dados["livros"]
+                if not livro_esta_emprestado(livro["id"], dados)
+            ]
+        
+        
         async def cadastrar_emprestimo(e):
             if not emprestimo_cliente.value or not emprestimo_livro.value:
                 await mostrar_snack("Escolha cliente e livro.", ft.Colors.RED_700)
@@ -62,7 +74,7 @@ def view_emprestimos(page, dados, estado, route_change, navegar):
             })
             emprestimo_cliente.value = None
             emprestimo_livro.value = None
-            await salvar_e_atualizar(page, dados, route_change, "Empréstimo cadastrado.")
+            await salvar_e_atualizar(page, dados, route_change, atualizar_dropdown_emprestimo,"Empréstimo cadastrado.")
 
         async def acionar_devolucao(emprestimo_id):
             emprestimo = obter_por_id(dados["emprestimos"], emprestimo_id)
@@ -111,7 +123,7 @@ def view_emprestimos(page, dados, estado, route_change, navegar):
                     dlg.open = False
                     page.update()
                 
-                await salvar_e_atualizar(page, dados, route_change, "Devolução registrada com sucesso.")
+                await salvar_e_atualizar(page, dados, route_change, atualizar_dropdown_emprestimo,"Devolução registrada com sucesso.")
 
         linhas = []
         for emprestimo in dados["emprestimos"]:

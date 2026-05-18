@@ -2,7 +2,6 @@ import json
 import os
 
 from components.cards import mostrar_snack
-from services.emprestimo_service import verificar_atrasos_e_multas
 from core.constants import DATA_FILE
 
 
@@ -32,16 +31,3 @@ def carregar_dados() -> dict:
 def salvar_dados(dados: dict):
     with open(DATA_FILE, "w", encoding="utf-8") as arquivo:
         json.dump(dados, arquivo, indent=2, ensure_ascii=False)
-
-async def salvar_e_atualizar(page, dados, route_change, atualizar_dropdowns, msg: str = None):
-
-        salvar_dados(dados)
-
-        verificar_atrasos_e_multas(dados)
-
-        atualizar_dropdowns()
-
-        if msg:
-            await mostrar_snack(msg)
-
-        route_change()
