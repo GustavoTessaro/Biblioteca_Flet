@@ -59,7 +59,7 @@ def view_clientes(page, dados, estado, route_change):
             cliente_email.value = cliente.get("email", "")
             cliente_telefone.value = cliente.get("telefone", "")
             estado["cliente_edit_id"] = cliente_id
-            route_change()
+            page.update()
 
         async def salvar_cliente_edit(e):
             if not estado["cliente_edit_id"]:
@@ -94,7 +94,7 @@ def view_clientes(page, dados, estado, route_change):
 
         def cancelar_edit(e):
             limpar_form_cliente()
-            route_change()
+            page.update()
 
         btn_salvar = criar_botao_primario(
             "Salvar",

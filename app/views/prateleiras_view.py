@@ -67,7 +67,7 @@ def view_prateleiras(page, dados, estado, route_change):
             prateleira_dias.value = str(prateleira["dias_e_prazo"])
             prateleira_multa.value = str(prateleira["multa_por_dia"])
             estado["prateleira_edit_id"] = prateleira_id
-            route_change()
+            page.update()
 
         async def salvar_prateleira_edit(e):
             if not estado["prateleira_edit_id"]:
@@ -109,7 +109,7 @@ def view_prateleiras(page, dados, estado, route_change):
 
         def cancelar_edit(e):
             limpar_form_prateleira()
-            route_change()
+            page.update()
 
         btn_salvar = criar_botao_primario(
             "Salvar",

@@ -81,7 +81,7 @@ def view_livros(page, dados, estado, route_change):
             livro_autor.value = livro["autor"]
             livro_prateleira.value = str(livro["prateleira_id"])
             estado["livro_edit_id"] = livro_id
-            route_change() # ── ADICIONADO: Atualiza a tela para mudar o botão Salvar para Laranja
+            page.update()
 
         async def salvar_livro_edit(e):
             if not estado["livro_edit_id"]:
@@ -131,7 +131,7 @@ def view_livros(page, dados, estado, route_change):
 
         def cancelar_edit(e):
             limpar_form_livro()
-            route_change() # ── ALTERADO: Redesenha a tela limpando o estado de edição
+            page.update()
 
         # Otimização: O botão de salvar só ativa a função se houver algo sendo editado
         btn_salvar = criar_botao_primario(
