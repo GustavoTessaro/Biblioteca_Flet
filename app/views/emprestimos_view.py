@@ -1,4 +1,5 @@
 import flet as ft
+import asyncio
 
 from core.helpers import *
 from services.cliente_service import *
