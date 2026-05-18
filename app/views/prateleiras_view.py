@@ -6,7 +6,7 @@ from components.buttons import *
 from components.layout import criar_layout_form
 from data.storage import salvar_e_atualizar
 from components.cards import mostrar_snack
-from services.prateleira_service import prateleira_existe
+from services.prateleira_service import prateleira_existe, prateleira_tem_livros
 
 def view_prateleiras(page, dados, estado, route_change):
         prateleira_nome = ft.TextField(
@@ -23,6 +23,12 @@ def view_prateleiras(page, dados, estado, route_change):
             label="Multa por dia",
             width=180
         )
+        
+        def limpar_form_prateleira():
+            prateleira_nome.value = ""
+            prateleira_dias.value = ""
+            prateleira_multa.value = ""
+            estado["prateleira_edit_id"] = None
         
         if estado["prateleira_edit_id"] and not obter_por_id(dados["prateleiras"], estado["prateleira_edit_id"]):
             limpar_form_prateleira()

@@ -31,6 +31,12 @@ def view_livros(page, dados, estado, route_change):
             ]
         )
         
+        def limpar_form_livro():
+            livro_titulo.value = ""
+            livro_autor.value = ""
+            livro_prateleira.value = None
+            estado["livro_edit_id"] = None
+        
         if estado["livro_edit_id"] and not obter_por_id(dados["livros"], estado["livro_edit_id"]):
             limpar_form_livro()
 
