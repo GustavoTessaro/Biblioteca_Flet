@@ -2,4 +2,6 @@ ajustar os botoes se ficam disable ou nao em prateleiras e livros, e ajustar tam
 
 verificar validações de @email certo, de telefone certo
 
+adicionar botão limpar lista de emprestimo e multas
+
 Fazer README
