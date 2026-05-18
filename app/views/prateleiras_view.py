@@ -6,6 +6,7 @@ from components.buttons import *
 from components.layout import criar_layout_form
 from data.storage import salvar_e_atualizar
 from components.cards import mostrar_snack
+from services.prateleira_service import prateleira_existe
 
 def view_prateleiras(page, dados, estado, route_change):
         prateleira_nome = ft.TextField(
