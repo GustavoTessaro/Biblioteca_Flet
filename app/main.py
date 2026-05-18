@@ -59,13 +59,9 @@ def main(page: ft.Page):
 
     page.window_maximized = True
 
-    page.theme = ft.Theme(
-        color_scheme_seed=ft.Colors.BLUE
-    )
+    page.theme = ft.Theme(color_scheme_seed=ft.Colors.BLUE)
 
-    page.dark_theme = ft.Theme(
-        color_scheme_seed=ft.Colors.INDIGO
-    )
+    page.dark_theme = ft.Theme(color_scheme_seed=ft.Colors.INDIGO)
 
     page.theme_mode = ft.ThemeMode.LIGHT
 
@@ -163,10 +159,7 @@ def main(page: ft.Page):
             ),
         }
 
-        view_fn = views_map.get(
-            estado["rota"],
-            lambda: view_home(dados)
-        )
+        view_fn = views_map.get(estado["rota"], lambda: view_home(dados))
 
         # =========================
         # MOBILE

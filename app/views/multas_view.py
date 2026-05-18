@@ -11,7 +11,7 @@ def view_multas(page, dados, estado, route_change):
             multa = obter_por_id(dados["multas"], multa_id)
             if multa:
                 multa["status"] = "Pago"
-                await salvar_e_atualizar()
+                await salvar_e_atualizar(page, dados, route_change, "Multa marcada como paga.")
                 await mostrar_snack("Multa marcada como paga.")
 
         linhas = []

@@ -51,7 +51,7 @@ def view_livros(page, dados, estado, route_change):
             if livro_existente:
                 livro_existente["quantidade"] = livro_existente.get("quantidade", 1) + 1
                 limpar_form_livro()
-                await salvar_e_atualizar(f"Livro existente encontrado. Quantidade atualizada para {livro_existente['quantidade']}.")
+                await salvar_e_atualizar(page, dados, route_change, f"Livro existente encontrado. Quantidade atualizada para {livro_existente['quantidade']}.")
                 return
             dados["livros"].append({
                 "id": proximo_id(dados["livros"]),
@@ -61,7 +61,7 @@ def view_livros(page, dados, estado, route_change):
                 "quantidade": 1,
             })
             limpar_form_livro()
-            await salvar_e_atualizar("Livro cadastrado.")
+            await salvar_e_atualizar(page, dados, route_change, "Livro cadastrado.")
 
         def editar_livro(livro_id):
             livro = obter_por_id(dados["livros"], livro_id)
@@ -93,7 +93,7 @@ def view_livros(page, dados, estado, route_change):
             livro["autor"] = autor
             livro["prateleira_id"] = prateleira_id
             limpar_form_livro()
-            await salvar_e_atualizar("Livro atualizado.")
+            await salvar_e_atualizar(page, dados, route_change, "Livro atualizado.")
 
         async def deletar_livro(livro_id):
             if livro_esta_emprestado(livro_id, dados) > 0:
@@ -102,13 +102,13 @@ def view_livros(page, dados, estado, route_change):
             dados["livros"][:] = [l for l in dados["livros"] if l["id"] != livro_id]
             if livro_id == estado["livro_edit_id"]:
                 limpar_form_livro()
-            await salvar_e_atualizar("Livro removido.")
+            await salvar_e_atualizar(page, dados, route_change, "Livro removido.")
 
         async def aumentar_quantidade(livro_id):
             livro = obter_por_id(dados["livros"], livro_id)
             if livro:
                 livro["quantidade"] = livro.get("quantidade", 1) + 1
-                await salvar_e_atualizar(f"Quantidade atualizada: {livro['quantidade']}")
+                await salvar_e_atualizar(page, dados, route_change, f"Quantidade atualizada: {livro['quantidade']}")
 
         async def diminuir_quantidade(livro_id):
             livro = obter_por_id(dados["livros"], livro_id)
@@ -117,7 +117,7 @@ def view_livros(page, dados, estado, route_change):
                     await mostrar_snack("Quantidade mínima é 1. Use excluir para remover o livro.", ft.Colors.RED_700)
                     return
                 livro["quantidade"] -= 1
-                await salvar_e_atualizar(f"Quantidade atualizada: {livro['quantidade']}")
+                await salvar_e_atualizar(page, dados, route_change, f"Quantidade atualizada: {livro['quantidade']}")
 
         def cancelar_edit(e):
             limpar_form_livro()

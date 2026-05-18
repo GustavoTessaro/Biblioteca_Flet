@@ -39,7 +39,7 @@ def view_clientes(page, dados, estado, route_change):
             if not nome or not email or not telefone:
                 await mostrar_snack("Todos os campos são obrigatórios.", ft.Colors.RED_700)
                 return
-            if cliente_existe(nome, email, telefone):
+            if cliente_existe(dados, nome, email, telefone):
                 await mostrar_snack("Já existe um cliente com nome, e-mail ou telefone iguais.", ft.Colors.RED_700)
                 return
             dados["clientes"].append({
@@ -49,7 +49,7 @@ def view_clientes(page, dados, estado, route_change):
                 "telefone": telefone,
             })
             limpar_form_cliente()
-            await salvar_e_atualizar("Cliente cadastrado com sucesso.")
+            await salvar_e_atualizar(page, dados, route_change, "Cliente cadastrado com sucesso.")
 
         def editar_cliente(cliente_id):
             cliente = obter_por_id(dados["clientes"], cliente_id)
@@ -74,14 +74,14 @@ def view_clientes(page, dados, estado, route_change):
             if not nome or not email or not telefone:
                 await mostrar_snack("Todos os campos são obrigatórios.", ft.Colors.RED_700)
                 return
-            if cliente_existe(nome, email, telefone, exclude_id=cliente["id"]):
+            if cliente_existe(dados, nome, email, telefone, exclude_id=cliente["id"]):
                 await mostrar_snack("Já existe um cliente com nome, e-mail ou telefone iguais.", ft.Colors.RED_700)
                 return
             cliente["nome"] = nome
             cliente["email"] = email
             cliente["telefone"] = telefone
             limpar_form_cliente()
-            await salvar_e_atualizar("Cliente atualizado.")
+            await salvar_e_atualizar(page, dados, route_change, "Cliente atualizado.")
 
         async def deletar_cliente(cliente_id):
             if cliente_tem_emprestimos_ativos(cliente_id, dados):
@@ -90,7 +90,7 @@ def view_clientes(page, dados, estado, route_change):
             dados["clientes"][:] = [c for c in dados["clientes"] if c["id"] != cliente_id]
             if cliente_id == estado["cliente_edit_id"]:
                 limpar_form_cliente()
-            await salvar_e_atualizar("Cliente removido.")
+            await salvar_e_atualizar(page, dados, route_change, "Cliente removido.")
 
         def cancelar_edit(e):
             limpar_form_cliente()

@@ -57,7 +57,7 @@ def view_prateleiras(page, dados, estado, route_change):
                 "multa_por_dia": multa_valor,
             })
             limpar_form_prateleira()
-            await salvar_e_atualizar("Prateleira cadastrada.")
+            await salvar_e_atualizar(page, dados, route_change, "Prateleira cadastrada.")
 
         def editar_prateleira(prateleira_id):
             prateleira = obter_por_id(dados["prateleiras"], prateleira_id)
@@ -96,7 +96,7 @@ def view_prateleiras(page, dados, estado, route_change):
             prateleira["dias_e_prazo"] = int(dias)
             prateleira["multa_por_dia"] = multa_valor
             limpar_form_prateleira()
-            await salvar_e_atualizar("Prateleira atualizada.")
+            await salvar_e_atualizar(page, dados, route_change, "Prateleira atualizada.")
 
         async def deletar_prateleira(prateleira_id):
             if prateleira_tem_livros(prateleira_id, dados):
@@ -105,7 +105,7 @@ def view_prateleiras(page, dados, estado, route_change):
             dados["prateleiras"][:] = [p for p in dados["prateleiras"] if p["id"] != prateleira_id]
             if prateleira_id == estado["prateleira_edit_id"]:
                 limpar_form_prateleira()
-            await salvar_e_atualizar("Prateleira removida.")
+            await salvar_e_atualizar(page, dados, route_change, "Prateleira removida.")
 
         def cancelar_edit(e):
             limpar_form_prateleira()

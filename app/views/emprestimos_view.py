@@ -62,7 +62,7 @@ def view_emprestimos(page, dados, estado, route_change, navegar):
             })
             emprestimo_cliente.value = None
             emprestimo_livro.value = None
-            await salvar_e_atualizar("Empréstimo cadastrado.")
+            await salvar_e_atualizar(page, dados, route_change, "Empréstimo cadastrado.")
 
         async def acionar_devolucao(emprestimo_id):
             emprestimo = obter_por_id(dados["emprestimos"], emprestimo_id)
@@ -111,7 +111,7 @@ def view_emprestimos(page, dados, estado, route_change, navegar):
                     dlg.open = False
                     page.update()
                 
-                await salvar_e_atualizar("Devolução registrada com sucesso.")
+                await salvar_e_atualizar(page, dados, route_change, "Devolução registrada com sucesso.")
 
         linhas = []
         for emprestimo in dados["emprestimos"]:
