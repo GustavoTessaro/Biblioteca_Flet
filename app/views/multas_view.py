@@ -26,7 +26,7 @@ def view_multas(page, dados, estado, route_change):
                         ft.Text(f"Multa: R${multa['valor']:.2f}", size=12, weight="bold"),
                         ft.Text(f"Dias de atraso: {multa['dias_atraso']}", size=11),
                     ], spacing=2),
-                    trailing=criar_botao_primario("Quitar", ft.Icons.CHECK, lambda e, mid=multa['id']: asyncio.create_task(marcar_multa_paga(mid)), bgcolor=ft.Colors.GREEN)
+                    trailing=criar_botao_primario("Quitar", ft.Icons.CHECK, lambda e, mid=multa['id']: page.run_task(marcar_multa_paga, mid), bgcolor=ft.Colors.GREEN)
                     if multa["status"] == "Pendente" else ft.Text("Pago", color=ft.Colors.GREEN),
                 )
             )

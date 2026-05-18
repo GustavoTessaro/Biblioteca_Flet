@@ -131,7 +131,7 @@ def view_emprestimos(page, dados, estado, route_change, navegar):
             livro = obter_por_id(dados["livros"], emprestimo["livro_id"])
 
             async def on_devolver(e, eid=emprestimo["id"]):
-                await acionar_devolucao(eid)
+                page.run_task(acionar_devolucao, eid)
 
             linhas.append(
                 ft.ListTile(
