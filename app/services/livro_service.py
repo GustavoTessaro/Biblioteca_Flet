@@ -1,10 +1,13 @@
+from core.constants import STATUS_ABERTO, STATUS_ATRASADO
+
+
 def livro_esta_emprestado(livro_id: int, dados: dict) -> int:
     return sum(
         1 for emprestimo in dados["emprestimos"]
         if emprestimo["livro_id"] == livro_id and emprestimo["status"] in [STATUS_ABERTO, STATUS_ATRASADO]
     )
     
-def obter_livro_por_atributos(dados,) -> dict | None:
+def obter_livro_por_atributos(dados, titulo, autor, prateleira_id, exclude_id=None) -> dict | None:
         titulo = titulo.strip().lower()
         autor = autor.strip().lower()
         return next(

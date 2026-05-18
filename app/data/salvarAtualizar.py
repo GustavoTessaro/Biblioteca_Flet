@@ -20,7 +20,8 @@ async def salvar_e_atualizar(page, dados, route_change, atualizar_dropdown, msg:
 
     verificar_atrasos_e_multas(dados)
 
-    atualizar_dropdown()
+    if atualizar_dropdown:
+        atualizar_dropdown()
 
     if msg:
         await mostrar_snack(page, msg)
