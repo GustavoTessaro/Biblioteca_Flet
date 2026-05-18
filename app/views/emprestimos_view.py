@@ -3,8 +3,33 @@ import flet as ft
 from core.helpers import *
 from services.cliente_service import *
 from components.buttons import *
+from components.layout import criar_layout_form
 
 def view_emprestimos(page, dados, estado, route_change, navegar):
+        emprestimo_cliente = ft.Dropdown(
+            label="Cliente",
+            width=250,
+            options=[
+                ft.dropdown.Option(
+                    str(c["id"]),
+                    c["nome"]
+                )
+                for c in dados["clientes"]
+            ]
+        )
+
+        emprestimo_livro = ft.Dropdown(
+            label="Livro",
+            width=250,
+            options=[
+                ft.dropdown.Option(
+                    str(l["id"]),
+                    l["titulo"]
+                )
+                for l in dados["livros"]
+            ]
+        )
+        
         async def cadastrar_emprestimo(e):
             if not emprestimo_cliente.value or not emprestimo_livro.value:
                 await mostrar_snack("Escolha cliente e livro.", ft.Colors.RED_700)
@@ -111,7 +136,7 @@ def view_emprestimos(page, dados, estado, route_change, navegar):
                 emprestimo_cliente,
                 emprestimo_livro,
                 criar_botao_primario("Cadastrar", ft.Icons.ADD, cadastrar_emprestimo, bgcolor=ft.Colors.GREEN),
-            ], spacing=10),
+            ], estado["mobile"], spacing=10),
             ft.Divider(),
             ft.Text("Empréstimos", weight="bold"),
             *linhas,

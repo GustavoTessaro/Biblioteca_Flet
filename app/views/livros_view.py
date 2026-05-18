@@ -3,8 +3,31 @@ import flet as ft
 from core.helpers import *
 from services.cliente_service import *
 from components.buttons import *
+from components.layout import criar_layout_form
 
 def view_livros(page, dados, estado, route_change):
+        livro_titulo = ft.TextField(
+            label="Título",
+            expand=True
+        )
+
+        livro_autor = ft.TextField(
+            label="Autor",
+            expand=True
+        )
+
+        livro_prateleira = ft.Dropdown(
+            label="Prateleira",
+            width=250,
+            options=[
+                ft.dropdown.Option(
+                    str(p["id"]),
+                    p["nome"]
+                )
+                for p in dados["prateleiras"]
+            ]
+        )
+        
         if estado["livro_edit_id"] and not obter_por_id(dados["livros"], estado["livro_edit_id"]):
             limpar_form_livro()
 
@@ -135,11 +158,11 @@ def view_livros(page, dados, estado, route_change):
                 livro_autor,
                 livro_prateleira,
                 criar_botao_primario("Cadastrar", ft.Icons.ADD, adicionar_livro, bgcolor=ft.Colors.GREEN),
-            ], spacing=10),
+            ], estado["mobile"], spacing=10),
             criar_layout_form([
                 btn_salvar,
                 criar_botao_secundario("Cancelar", ft.Icons.CANCEL, cancelar_edit, color=ft.Colors.GREY),
-            ], spacing=10),
+            ], estado["mobile"],spacing=10),
             ft.Divider(),
             ft.Text("Livros cadastrados", weight="bold"),
             *linhas,

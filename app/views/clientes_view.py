@@ -3,8 +3,24 @@ import flet as ft
 from core.helpers import *
 from services.cliente_service import *
 from components.buttons import *
+from components.layout import criar_layout_form
 
 def view_clientes(page, dados, estado, route_change):
+        cliente_nome = ft.TextField(
+            label="Nome",
+            expand=True
+        )
+
+        cliente_email = ft.TextField(
+            label="Email",
+            expand=True
+        )
+
+        cliente_telefone = ft.TextField(
+            label="Telefone",
+            expand=True
+        )
+        
         if estado["cliente_edit_id"] and not obter_por_id(dados["clientes"], estado["cliente_edit_id"]):
             limpar_form_cliente()
 
@@ -105,11 +121,11 @@ def view_clientes(page, dados, estado, route_change):
                 cliente_email,
                 cliente_telefone,
                 criar_botao_primario("Cadastrar", ft.Icons.ADD, adicionar_cliente, bgcolor=ft.Colors.GREEN),
-            ], spacing=10),
+            ], estado["mobile"], spacing=10),
             criar_layout_form([
                 btn_salvar,
                 criar_botao_secundario("Cancelar", ft.Icons.CANCEL, cancelar_edit, color=ft.Colors.GREY),
-            ], spacing=10),
+            ], estado["mobile"], spacing=10),
             ft.Divider(),
             ft.Text("Clientes cadastrados", weight="bold"),
             *linhas,

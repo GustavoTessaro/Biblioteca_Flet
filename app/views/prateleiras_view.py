@@ -3,8 +3,24 @@ import flet as ft
 from core.helpers import *
 from services.cliente_service import *
 from components.buttons import *
+from components.layout import criar_layout_form
 
 def view_prateleiras(page, dados, estado, route_change):
+        prateleira_nome = ft.TextField(
+            label="Nome",
+            expand=True
+        )
+
+        prateleira_dias = ft.TextField(
+            label="Dias de empréstimo",
+            width=180
+        )
+
+        prateleira_multa = ft.TextField(
+            label="Multa por dia",
+            width=180
+        )
+        
         if estado["prateleira_edit_id"] and not obter_por_id(dados["prateleiras"], estado["prateleira_edit_id"]):
             limpar_form_prateleira()
 
@@ -118,11 +134,11 @@ def view_prateleiras(page, dados, estado, route_change):
                 prateleira_dias,
                 prateleira_multa,
                 criar_botao_primario("Cadastrar", ft.Icons.ADD, adicionar_prateleira, bgcolor=ft.Colors.GREEN),
-            ], spacing=10),
+            ], estado["mobile"], spacing=10),
             criar_layout_form([
                 btn_salvar,
                 criar_botao_secundario("Cancelar", ft.Icons.CANCEL, cancelar_edit, color=ft.Colors.GREY),
-            ], spacing=10),
+            ],estado["mobile"], spacing=10),
             ft.Divider(),
             ft.Text("Prateleiras cadastradas", weight="bold"),
             *linhas,
