@@ -1,5 +1,4 @@
-fazer com que, quando clicar no botão de editar, o botao de cancelar fica indisponível,
-e o botão de salvar fica disponível, se clicar em cancelar, o botao de salvar fica indisponivel e o botao de cadastrar fica disponivel.
+ajustar os botoes se ficam disable ou nao em prateleiras e livros, e ajustar tambem a cor quando fica habilitado ou não
 
 verificar validações de @email certo, de telefone certo
 

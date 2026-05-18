@@ -28,7 +28,12 @@ def view_clientes(page, dados, estado, route_change):
             cliente_email.value = ""
             cliente_telefone.value = ""
             estado["cliente_edit_id"] = None
+            atualizar_estado_botoes()
         
+        def atualizar_estado_botoes():
+            btn_cadastrar.disabled = bool(estado.get("cliente_edit_id"))
+            btn_salvar.disabled = not bool(estado.get("cliente_edit_id"))
+
         if estado["cliente_edit_id"] and not obter_por_id(dados["clientes"], estado["cliente_edit_id"]):
             limpar_form_cliente()
 
@@ -59,6 +64,7 @@ def view_clientes(page, dados, estado, route_change):
             cliente_email.value = cliente.get("email", "")
             cliente_telefone.value = cliente.get("telefone", "")
             estado["cliente_edit_id"] = cliente_id
+            atualizar_estado_botoes()
             page.update()
 
         async def salvar_cliente_edit(e):
@@ -96,11 +102,22 @@ def view_clientes(page, dados, estado, route_change):
             limpar_form_cliente()
             page.update()
 
+        btn_cadastrar = criar_botao_primario(
+            "Cadastrar",
+            ft.Icons.ADD,
+            adicionar_cliente,
+            bgcolor=ft.Colors.GREEN,
+            expand=False,
+            disabled=bool(estado.get("cliente_edit_id"))
+        )
+
         btn_salvar = criar_botao_primario(
             "Salvar",
             ft.Icons.SAVE,
             salvar_cliente_edit,
-            bgcolor=ft.Colors.ORANGE if estado["cliente_edit_id"] else ft.Colors.GREY
+            bgcolor=ft.Colors.ORANGE if estado.get("cliente_edit_id") else ft.Colors.GREY,
+            expand=False,
+            disabled=not bool(estado.get("cliente_edit_id"))
         )
 
         linhas = []
@@ -128,7 +145,7 @@ def view_clientes(page, dados, estado, route_change):
                 cliente_nome,
                 cliente_email,
                 cliente_telefone,
-                criar_botao_primario("Cadastrar", ft.Icons.ADD, adicionar_cliente, bgcolor=ft.Colors.GREEN),
+                btn_cadastrar,
             ], estado["mobile"], spacing=10),
             criar_layout_form([
                 btn_salvar,
