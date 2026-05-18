@@ -1,4 +1,18 @@
+from app.core.constants import BORDER_RADIUS
 import flet as ft
+
+def criar_item_menu(label: str, ic_off, ic_on, ativo: bool, on_click):
+        return ft.Container(
+            content=ft.Row([
+                ft.Icon(ic_on if ativo else ic_off, color=ft.Colors.BLUE_700 if ativo else ft.Colors.BLACK, size=20),
+                ft.Text(label, size=14, color=ft.Colors.BLUE_700 if ativo else ft.Colors.BLACK, weight="bold" if ativo else "normal"),
+            ], spacing=12, tight=True),
+            padding=ft.Padding(12, 10, 12, 10),
+            border_radius=BORDER_RADIUS,
+            bgcolor=ft.Colors.BLUE_50 if ativo else ft.Colors.TRANSPARENT,
+            on_click=on_click,
+        )
+
 
 def menu_lateral(estado, rotas_menu, navegar):
         rota = estado["rota"]
