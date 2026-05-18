@@ -1,4 +1,4 @@
-from app.core.constants import STATUS_ABERTO, STATUS_ATRASADO
+from core.constants import STATUS_ABERTO, STATUS_ATRASADO
 
 
 def cliente_existe(dados, nome, email, telefone, exclude_id=None) -> bool:

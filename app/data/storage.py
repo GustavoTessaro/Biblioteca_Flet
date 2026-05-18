@@ -1,6 +1,6 @@
 import json
 
-from app.core.constants import DATA_FILE
+from core.constants import DATA_FILE
 
 
 def carregar_dados() -> dict:

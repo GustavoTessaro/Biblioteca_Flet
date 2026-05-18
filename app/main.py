@@ -21,6 +21,7 @@ from data.storage import carregar_dados, salvar_dados
 from services.cliente_service import cliente_existe, cliente_tem_emprestimos_ativos
 from services.emprestimo_service import verificar_atrasos_e_multas, obter_status_emprestimo
 from services.livro_service import livro_esta_emprestado, obter_livro_por_atributos
+from services.multa_service import calcular_valor_multa
 from services.prateleira_service import prateleira_existe
 
 # =========================

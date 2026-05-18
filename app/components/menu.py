@@ -1,4 +1,4 @@
-from app.core.constants import BORDER_RADIUS
+from core.constants import BORDER_RADIUS
 import flet as ft
 
 def criar_item_menu(label: str, ic_off, ic_on, ativo: bool, on_click):
