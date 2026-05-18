@@ -53,7 +53,7 @@ def construir_appbar(page, estado, titulos_paginas, route_change):
 
                     tooltip="Alternar tema",
 
-                    on_click=lambda e: toggle_theme(),
+                    on_click=lambda e: toggle_theme(page, estado, route_change),
                 )
             ]
         )

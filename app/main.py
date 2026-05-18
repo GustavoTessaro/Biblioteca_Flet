@@ -29,7 +29,7 @@ from services.prateleira_service import prateleira_existe
 # =========================
 
 from components.appbar import construir_appbar
-from components.buttons import (botao_primario, botao_secundario)
+from components.buttons import (criar_botao_primario,criar_botao_secundario)
 from components.cards import criar_card
 from components.menu import menu_lateral
 from components.navigation import navigation_bar_mobile

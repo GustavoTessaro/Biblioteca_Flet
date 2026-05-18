@@ -3,6 +3,7 @@ import flet as ft
 from core.helpers import *
 from services.cliente_service import *
 from components.buttons import *
+from components.cards import criar_card
 
 def view_home(dados):
         total_clientes = len(dados["clientes"])
