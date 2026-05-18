@@ -4,7 +4,7 @@ from core.helpers import *
 from services.cliente_service import *
 from components.buttons import *
 from components.layout import criar_layout_form
-from data.salvarAtualizar import salvar_e_atualizar_cliente
+from data.salvarAtualizar import salvar_e_atualizar
 from components.cards import mostrar_snack
 
 def view_clientes(page, dados, estado, route_change):
@@ -49,7 +49,7 @@ def view_clientes(page, dados, estado, route_change):
                 "telefone": telefone,
             })
             limpar_form_cliente()
-            await salvar_e_atualizar_cliente(page, dados, route_change, "Cliente cadastrado com sucesso.")
+            await salvar_e_atualizar(page, dados, route_change, None, "Cliente cadastrado com sucesso.")
 
         def editar_cliente(cliente_id):
             cliente = obter_por_id(dados["clientes"], cliente_id)
@@ -81,7 +81,7 @@ def view_clientes(page, dados, estado, route_change):
             cliente["email"] = email
             cliente["telefone"] = telefone
             limpar_form_cliente()
-            await salvar_e_atualizar_cliente(page, dados, route_change, "Cliente atualizado.")
+            await salvar_e_atualizar(page, dados, route_change, None, "Cliente atualizado.")
 
         async def deletar_cliente(cliente_id):
             if cliente_tem_emprestimos_ativos(cliente_id, dados):
@@ -90,7 +90,7 @@ def view_clientes(page, dados, estado, route_change):
             dados["clientes"][:] = [c for c in dados["clientes"] if c["id"] != cliente_id]
             if cliente_id == estado["cliente_edit_id"]:
                 limpar_form_cliente()
-            await salvar_e_atualizar_cliente(page, dados, route_change, "Cliente removido.")
+            await salvar_e_atualizar(page, dados, route_change, None, "Cliente removido.")
 
         def cancelar_edit(e):
             limpar_form_cliente()
