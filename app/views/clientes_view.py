@@ -37,10 +37,10 @@ def view_clientes(page, dados, estado, route_change):
             email = cliente_email.value.strip()
             telefone = cliente_telefone.value.strip()
             if not nome or not email or not telefone:
-                await mostrar_snack("Todos os campos são obrigatórios.", ft.Colors.RED_700)
+                await mostrar_snack(page, "Todos os campos são obrigatórios.", ft.Colors.RED_700)
                 return
             if cliente_existe(dados, nome, email, telefone):
-                await mostrar_snack("Já existe um cliente com nome, e-mail ou telefone iguais.", ft.Colors.RED_700)
+                await mostrar_snack(page, "Já existe um cliente com nome, e-mail ou telefone iguais.", ft.Colors.RED_700)
                 return
             dados["clientes"].append({
                 "id": proximo_id(dados["clientes"]),
@@ -72,10 +72,10 @@ def view_clientes(page, dados, estado, route_change):
             email = cliente_email.value.strip()
             telefone = cliente_telefone.value.strip()
             if not nome or not email or not telefone:
-                await mostrar_snack("Todos os campos são obrigatórios.", ft.Colors.RED_700)
+                await mostrar_snack(page, "Todos os campos são obrigatórios.", ft.Colors.RED_700)
                 return
             if cliente_existe(dados, nome, email, telefone, exclude_id=cliente["id"]):
-                await mostrar_snack("Já existe um cliente com nome, e-mail ou telefone iguais.", ft.Colors.RED_700)
+                await mostrar_snack(page, "Já existe um cliente com nome, e-mail ou telefone iguais.", ft.Colors.RED_700)
                 return
             cliente["nome"] = nome
             cliente["email"] = email
@@ -85,7 +85,7 @@ def view_clientes(page, dados, estado, route_change):
 
         async def deletar_cliente(cliente_id):
             if cliente_tem_emprestimos_ativos(cliente_id, dados):
-                await mostrar_snack("Não pode deletar cliente com empréstimos ativos.", ft.Colors.RED_700)
+                await mostrar_snack(page, "Não pode deletar cliente com empréstimos ativos.", ft.Colors.RED_700)
                 return
             dados["clientes"][:] = [c for c in dados["clientes"] if c["id"] != cliente_id]
             if cliente_id == estado["cliente_edit_id"]:

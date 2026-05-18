@@ -12,7 +12,7 @@ def view_multas(page, dados, estado, route_change):
             if multa:
                 multa["status"] = "Pago"
                 await salvar_e_atualizar(page, dados, route_change, None, "Multa marcada como paga.")
-                await mostrar_snack("Multa marcada como paga.")
+                await mostrar_snack(page, "Multa marcada como paga.")
 
         linhas = []
         for multa in dados["multas"]:

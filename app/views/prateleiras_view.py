@@ -39,16 +39,16 @@ def view_prateleiras(page, dados, estado, route_change):
             multa_texto = prateleira_multa.value.strip()
             multa_valor = parse_float(prateleira_multa.value)
             if not nome or not dias or not multa_texto:
-                await mostrar_snack("Todos os campos são obrigatórios.", ft.Colors.RED_700)
+                await mostrar_snack(page, "Todos os campos são obrigatórios.", ft.Colors.RED_700)
                 return
             if not dias.isdigit() or int(dias) <= 0:
-                await mostrar_snack("Preencha nome e dias de empréstimo válidos.", ft.Colors.RED_700)
+                await mostrar_snack(page, "Preencha nome e dias de empréstimo válidos.", ft.Colors.RED_700)
                 return
             if multa_valor is None:
-                await mostrar_snack("Multa por dia deve ser um número válido.", ft.Colors.RED_700)
+                await mostrar_snack(page, "Multa por dia deve ser um número válido.", ft.Colors.RED_700)
                 return
             if prateleira_existe(dados, nome):
-                await mostrar_snack("Já existe uma prateleira com esses dados.", ft.Colors.RED_700)
+                await mostrar_snack(page, "Já existe uma prateleira com esses dados.", ft.Colors.RED_700)
                 return
             dados["prateleiras"].append({
                 "id": proximo_id(dados["prateleiras"]),
@@ -81,16 +81,16 @@ def view_prateleiras(page, dados, estado, route_change):
             multa_texto = prateleira_multa.value.strip()
             multa_valor = parse_float(prateleira_multa.value)
             if not nome or not dias or not multa_texto:
-                await mostrar_snack("Todos os campos são obrigatórios.", ft.Colors.RED_700)
+                await mostrar_snack(page, "Todos os campos são obrigatórios.", ft.Colors.RED_700)
                 return
             if not dias.isdigit() or int(dias) <= 0:
-                await mostrar_snack("Dias deve ser um número válido.", ft.Colors.RED_700)
+                await mostrar_snack(page, "Dias deve ser um número válido.", ft.Colors.RED_700)
                 return
             if multa_valor is None:
-                await mostrar_snack("Multa por dia deve ser um número válido.", ft.Colors.RED_700)
+                await mostrar_snack(page, "Multa por dia deve ser um número válido.", ft.Colors.RED_700)
                 return
             if prateleira_existe(dados, nome, exclude_id=prateleira["id"]):
-                await mostrar_snack("Já existe uma prateleira com esses dados.", ft.Colors.RED_700)
+                await mostrar_snack(page, "Já existe uma prateleira com esses dados.", ft.Colors.RED_700)
                 return
             prateleira["nome"] = nome
             prateleira["dias_e_prazo"] = int(dias)
@@ -100,7 +100,7 @@ def view_prateleiras(page, dados, estado, route_change):
 
         async def deletar_prateleira(prateleira_id):
             if prateleira_tem_livros(prateleira_id, dados):
-                await mostrar_snack("Não pode deletar prateleira que tem livros cadastrados.", ft.Colors.RED_700)
+                await mostrar_snack(page, "Não pode deletar prateleira que tem livros cadastrados.", ft.Colors.RED_700)
                 return
             dados["prateleiras"][:] = [p for p in dados["prateleiras"] if p["id"] != prateleira_id]
             if prateleira_id == estado["prateleira_edit_id"]:

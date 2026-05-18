@@ -48,19 +48,19 @@ def view_emprestimos(page, dados, estado, route_change, navegar):
         
         async def cadastrar_emprestimo(e):
             if not emprestimo_cliente.value or not emprestimo_livro.value:
-                await mostrar_snack("Escolha cliente e livro.", ft.Colors.RED_700)
+                await mostrar_snack(page, "Escolha cliente e livro.", ft.Colors.RED_700)
                 return
             cliente_id = int(emprestimo_cliente.value)
             livro_id = int(emprestimo_livro.value)
             livro = obter_por_id(dados["livros"], livro_id)
             prateleira = obter_por_id(dados["prateleiras"], livro["prateleira_id"]) if livro else None
             if not livro or not prateleira:
-                await mostrar_snack("Livro ou prateleira inválidos.", ft.Colors.RED_700)
+                await mostrar_snack(page, "Livro ou prateleira inválidos.", ft.Colors.RED_700)
                 return
             emprestimos_abertos = livro_esta_emprestado(livro_id, dados)
             quantidade = livro.get("quantidade", 1)
             if emprestimos_abertos >= quantidade:
-                await mostrar_snack("Não há cópias disponíveis deste livro.", ft.Colors.RED_700)
+                await mostrar_snack(page, "Não há cópias disponíveis deste livro.", ft.Colors.RED_700)
                 return
 
             hoje = date.today()
@@ -79,6 +79,7 @@ def view_emprestimos(page, dados, estado, route_change, navegar):
         async def acionar_devolucao(emprestimo_id):
             emprestimo = obter_por_id(dados["emprestimos"], emprestimo_id)
             if not emprestimo:
+                await mostrar_snack(page, "Empréstimo não encontrado.", ft.Colors.RED_700)
                 return
             
             multa = next((m for m in dados["multas"] if m["emprestimo_id"] == emprestimo_id and m["status"] == "Pendente"), None)
