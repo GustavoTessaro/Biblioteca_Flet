@@ -1,6 +1,30 @@
+import asyncio
+
 import flet as ft
 
 from core.theme import paleta
+
+async def mostrar_snack(page: ft.Page, msg: str, cor=ft.Colors.GREEN_700):
+
+        snack = ft.SnackBar(
+            content=ft.Text(
+                msg,
+                color=ft.Colors.WHITE
+            ),
+            bgcolor=cor,
+            duration=2500,
+        )
+
+        page.overlay.clear()
+
+        page.overlay.append(snack)
+
+        snack.open = True
+
+        page.update()
+
+        await asyncio.sleep(1.2)
+
 
 def criar_card(
     titulo: str,

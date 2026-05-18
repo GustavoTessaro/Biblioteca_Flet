@@ -4,6 +4,7 @@ from core.helpers import *
 from services.cliente_service import *
 from components.buttons import *
 from data.storage import salvar_e_atualizar
+from components.cards import mostrar_snack
 
 def view_multas(page, dados, estado, route_change):
         async def marcar_multa_paga(multa_id):
