@@ -85,6 +85,7 @@ def view_emprestimos(page, dados, estado, route_change, navegar):
             multa = next((m for m in dados["multas"] if m["emprestimo_id"] == emprestimo_id and m["status"] == "Pendente"), None)
             
             if multa:
+                await mostrar_snack(page, "Este empréstimo possui multa pendente.", ft.Colors.RED_700)
                 async def confirmar_devolucao(e):
                     await finalizar_devolucao(None, emprestimo_id, multa, dlg)
 
