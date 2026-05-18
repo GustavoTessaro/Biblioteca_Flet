@@ -1,6 +1,8 @@
 import json
 import os
 
+from components.cards import mostrar_snack
+from services.emprestimo_service import verificar_atrasos_e_multas
 from core.constants import DATA_FILE
 
 
