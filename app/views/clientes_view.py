@@ -15,12 +15,14 @@ def view_clientes(page, dados, estado, route_change):
 
         cliente_email = ft.TextField(
             label="Email",
-            expand=True
+            expand=True,
+            keyboard_type=ft.KeyboardType.EMAIL
         )
 
         cliente_telefone = ft.TextField(
             label="Telefone",
-            expand=True
+            expand=True,
+            keyboard_type=ft.KeyboardType.PHONE
         )
         
         def limpar_form_cliente():
@@ -42,12 +44,18 @@ def view_clientes(page, dados, estado, route_change):
         async def adicionar_cliente(e):
             nome = cliente_nome.value.strip()
             email = cliente_email.value.strip()
-            telefone = cliente_telefone.value.strip()
-            if not nome or not email or not telefone:
+            telefone = telefone_valido(cliente_telefone.value)
+            if not telefone:
+                await mostrar_snack(page, "Telefone inválido.", ft.Colors.RED_700)
+                return
+            if not nome or not email:
                 await mostrar_snack(page, "Todos os campos são obrigatórios.", ft.Colors.RED_700)
                 return
             if cliente_existe(dados, nome, email, telefone):
                 await mostrar_snack(page, "Já existe um cliente com nome, e-mail ou telefone iguais.", ft.Colors.RED_700)
+                return
+            if not email_valido(email):
+                await mostrar_snack(page, "E-mail inválido.", ft.Colors.RED_700)
                 return
             dados["clientes"].append({
                 "id": proximo_id(dados["clientes"]),
@@ -84,6 +92,12 @@ def view_clientes(page, dados, estado, route_change):
                 return
             if cliente_existe(dados, nome, email, telefone, exclude_id=cliente["id"]):
                 await mostrar_snack(page, "Já existe um cliente com nome, e-mail ou telefone iguais.", ft.Colors.RED_700)
+                return
+            if not email_valido(email):
+                await mostrar_snack(page, "E-mail inválido.", ft.Colors.RED_700)
+                return
+            if not telefone:
+                await mostrar_snack(page, "Telefone inválido.", ft.Colors.RED_700)
                 return
             cliente["nome"] = nome
             cliente["email"] = email

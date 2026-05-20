@@ -1,7 +1,3 @@
-verificar validações de @email certo, de telefone certo
-
-adicionar botão limpar lista de emprestimo e multas
-
 adicionar campo de pesquisa tambem
 
 Fazer README
