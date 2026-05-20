@@ -136,6 +136,63 @@ def view_clientes(page, dados, estado, route_change):
             disabled=not bool(estado.get("cliente_edit_id"))
         )
 
+        campo_pesquisa = ft.TextField(
+            label="Pesquisar clientes",
+            prefix_icon=ft.Icons.SEARCH,
+            on_change=lambda e: atualizar_lista_clientes(),
+        )
+
+        lista_clientes = ft.Column(spacing=10)
+        
+        def atualizar_lista_clientes():
+            texto = campo_pesquisa.value.lower().strip()
+
+            lista_clientes.controls.clear()
+
+            clientes_filtrados = [
+                cliente for cliente in dados["clientes"]
+                if (
+                    texto in cliente["nome"].lower()
+                    or texto in cliente.get("email", "").lower()
+                    or texto in cliente.get("telefone", "").lower()
+                )
+            ]
+
+            for cliente in clientes_filtrados:
+
+                async def on_delete_cliente(e, cid=cliente["id"]):
+                    await deletar_cliente(cid)
+
+                lista_clientes.controls.append(
+                    ft.ListTile(
+                        title=ft.Text(cliente["nome"], weight="bold"),
+                        subtitle=ft.Column([
+                            ft.Text(f"Email: {cliente.get('email', 'N/A')}", size=12),
+                            ft.Text(f"Telefone: {cliente.get('telefone', 'N/A')}", size=12),
+                        ], spacing=4),
+                        trailing=ft.Row([
+                            criar_botao_primario(
+                                "",
+                                ft.Icons.EDIT,
+                                lambda e, cid=cliente["id"]: editar_cliente(cid),
+                                bgcolor=ft.Colors.BLUE
+                            ),
+                            criar_botao_primario(
+                                "",
+                                ft.Icons.DELETE,
+                                on_delete_cliente,
+                                bgcolor=ft.Colors.RED
+                            ),
+                        ], spacing=5, tight=True),
+                        is_three_line=True,
+                        min_vertical_padding=8,
+                    )
+                )
+
+            page.update()
+
+        atualizar_lista_clientes()
+
         linhas = []
         for cliente in dados["clientes"]:
             async def on_delete_cliente(e, cid=cliente["id"]):
@@ -169,6 +226,7 @@ def view_clientes(page, dados, estado, route_change):
             ], estado["mobile"], spacing=10),
             ft.Divider(),
             ft.Text("Clientes cadastrados", weight="bold"),
-            *linhas,
+            campo_pesquisa,
+            lista_clientes,
         ], spacing=12)
         return ft.ListView([lista], expand=True, padding=20, spacing=20)
