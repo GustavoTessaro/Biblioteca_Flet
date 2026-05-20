@@ -140,27 +140,122 @@ def view_emprestimos(page, dados, estado, route_change, navegar):
                 "Histórico de empréstimos concluídos removido."
             )
 
-        linhas = []
-        for emprestimo in dados["emprestimos"]:
-            cliente = obter_por_id(dados["clientes"], emprestimo["cliente_id"])
-            livro = obter_por_id(dados["livros"], emprestimo["livro_id"])
+        campo_pesquisa = ft.TextField(
+            label="Pesquisar empréstimos",
+            prefix_icon=ft.Icons.SEARCH,
+            on_change=lambda e: atualizar_lista_emprestimos(),
+        )
 
-            async def on_devolver(e, eid=emprestimo["id"]):
-                page.run_task(acionar_devolucao, eid)
+        lista_emprestimos = ft.Column(spacing=10)
 
-            linhas.append(
-                ft.ListTile(
-                    title=ft.Text(f"{livro['titulo'] if livro else 'Livro removido'}", weight="bold"),
-                    subtitle=ft.Column([
-                        ft.Text(f"Cliente: {cliente['nome'] if cliente else 'Removido'}", size=12),
-                        ft.Text(f"Status: {emprestimo['status']}", size=12, weight="bold"),
-                        ft.Text(f"Emprestado: {emprestimo['data_emprestimo']}", size=11),
-                        ft.Text(f"Devolução prevista: {emprestimo['data_entrega']}", size=11),
-                    ], spacing=2),
-                    trailing=criar_botao_primario("Devolver", ft.Icons.UNDO, on_devolver, bgcolor=ft.Colors.ORANGE)
-                    if emprestimo["status"] in [STATUS_ABERTO, STATUS_ATRASADO] else ft.Text("Concluído", color=ft.Colors.GREEN),
+        def atualizar_lista_emprestimos():
+
+            texto = campo_pesquisa.value.lower().strip()
+
+            lista_emprestimos.controls.clear()
+
+            emprestimos_filtrados = []
+
+            for emprestimo in dados["emprestimos"]:
+
+                cliente = obter_por_id(
+                    dados["clientes"],
+                    emprestimo["cliente_id"]
                 )
-            )
+
+                livro = obter_por_id(
+                    dados["livros"],
+                    emprestimo["livro_id"]
+                )
+
+                nome_cliente = (
+                    cliente["nome"].lower()
+                    if cliente else ""
+                )
+
+                titulo_livro = (
+                    livro["titulo"].lower()
+                    if livro else ""
+                )
+
+                status = emprestimo["status"].lower()
+
+                if (
+                    texto == ""
+                    or texto in nome_cliente
+                    or texto in titulo_livro
+                    or texto in status
+                ):
+                    emprestimos_filtrados.append(
+                        (emprestimo, cliente, livro)
+                    )
+
+            if not emprestimos_filtrados:
+
+                lista_emprestimos.controls.append(
+                    ft.Text(
+                        "Nenhum empréstimo encontrado.",
+                        color=ft.Colors.GREY
+                    )
+                )
+
+            for emprestimo, cliente, livro in emprestimos_filtrados:
+
+                async def on_devolver(e, eid=emprestimo["id"]):
+                    page.run_task(acionar_devolucao, eid)
+
+                lista_emprestimos.controls.append(
+                    ft.ListTile(
+                        title=ft.Text(
+                            f"{livro['titulo'] if livro else 'Livro removido'}",
+                            weight="bold"
+                        ),
+
+                        subtitle=ft.Column([
+                            ft.Text(
+                                f"Cliente: {cliente['nome'] if cliente else 'Removido'}",
+                                size=12
+                            ),
+
+                            ft.Text(
+                                f"Status: {emprestimo['status']}",
+                                size=12,
+                                weight="bold"
+                            ),
+
+                            ft.Text(
+                                f"Emprestado: {emprestimo['data_emprestimo']}",
+                                size=11
+                            ),
+
+                            ft.Text(
+                                f"Devolução prevista: {emprestimo['data_entrega']}",
+                                size=11
+                            ),
+
+                        ], spacing=2),
+
+                        trailing=(
+                            criar_botao_primario(
+                                "Devolver",
+                                ft.Icons.UNDO,
+                                on_devolver,
+                                bgcolor=ft.Colors.ORANGE
+                            )
+
+                            if emprestimo["status"] in [STATUS_ABERTO, STATUS_ATRASADO]
+
+                            else ft.Text(
+                                "Concluído",
+                                color=ft.Colors.GREEN
+                            )
+                        ),
+                    )
+                )
+
+            page.update()
+
+        atualizar_lista_emprestimos()
 
         lista = ft.Column([
             criar_layout_form([
@@ -176,6 +271,7 @@ def view_emprestimos(page, dados, estado, route_change, navegar):
             ),
             ft.Divider(),
             ft.Text("Empréstimos", weight="bold"),
-            *linhas,
+            campo_pesquisa,
+            lista_emprestimos,
         ], spacing=12)
         return ft.ListView([lista], expand=True, padding=20, spacing=20)
