@@ -11,7 +11,7 @@ from services.prateleira_service import prateleira_existe, prateleira_tem_livros
 def view_prateleiras(page, dados, estado, route_change):
         prateleira_nome = ft.TextField(
             label="Nome",
-            expand=True
+            width=180
         )
 
         prateleira_dias = ft.TextField(
