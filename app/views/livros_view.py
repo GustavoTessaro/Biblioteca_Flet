@@ -153,35 +153,154 @@ def view_livros(page, dados, estado, route_change):
         
         btn_cadastrar = criar_botao_primario("Cadastrar", ft.Icons.ADD, adicionar_livro, bgcolor=ft.Colors.GREEN, expand=False, disabled=bool(estado.get("livro_edit_id")))
 
-        linhas = []
-        for livro in dados["livros"]:
-            async def on_delete_livro(e, lid=livro["id"]):
-                await deletar_livro(lid)
-            async def on_add(e, lid=livro["id"]):
-                await aumentar_quantidade(lid)
-            async def on_remove(e, lid=livro["id"]):
-                await diminuir_quantidade(lid)
-            emprestimos_abertos = livro_esta_emprestado(livro["id"], dados)
-            quantidade = livro.get("quantidade", 1)
-            emprestado = emprestimos_abertos >= quantidade
-            prateleira = obter_por_id(dados["prateleiras"], livro["prateleira_id"])
-            linhas.append(
-                ft.ListTile(
-                    title=ft.Text(livro["titulo"], weight="bold"),
-                    subtitle=ft.Column([
-                        ft.Text(f"Autor: {livro['autor']}", size=12),
-                        ft.Text(f"Prateleira: {prateleira['nome'] if prateleira else 'Sem prateleira'}", size=12),
-                    ], spacing=2),
-                    trailing=ft.Row([
-                        ft.Text(f"Qty: {quantidade} (Disp: {quantidade - emprestimos_abertos})", size=12),
-                        ft.Text("Disponível" if emprestimos_abertos < quantidade else "Emprestado", color=ft.Colors.GREEN if emprestimos_abertos < quantidade else ft.Colors.RED),
-                        criar_botao_primario("",ft.Icons.ADD,on_add,bgcolor=ft.Colors.BLUE),
-                        criar_botao_primario("",ft.Icons.REMOVE,on_remove,bgcolor=ft.Colors.GREY),
-                        criar_botao_primario("", ft.Icons.EDIT, lambda e, lid=livro["id"]: editar_livro(lid), bgcolor=ft.Colors.BLUE),
-                        criar_botao_primario("", ft.Icons.DELETE, on_delete_livro, bgcolor=ft.Colors.RED) if not emprestado else ft.Container(),
-                    ], spacing=5, tight=True), # ── ADICIONADO: tight=True evita bugs de tamanho na linha de ações
+        campo_pesquisa = ft.TextField(
+            label="Pesquisar livros",
+            prefix_icon=ft.Icons.SEARCH,
+            on_change=lambda e: atualizar_lista_livros(),
+        )
+
+        lista_livros = ft.Column(spacing=10)
+
+        def atualizar_lista_livros():
+
+            texto = campo_pesquisa.value.lower().strip()
+
+            lista_livros.controls.clear()
+
+            livros_filtrados = []
+
+            for livro in dados["livros"]:
+
+                prateleira = obter_por_id(
+                    dados["prateleiras"],
+                    livro["prateleira_id"]
                 )
-            )
+
+                titulo = livro["titulo"].lower()
+                autor = livro["autor"].lower()
+
+                nome_prateleira = (
+                    prateleira["nome"].lower()
+                    if prateleira else ""
+                )
+
+                if (
+                    texto == ""
+                    or texto in titulo
+                    or texto in autor
+                    or texto in nome_prateleira
+                ):
+                    livros_filtrados.append(
+                        (livro, prateleira)
+                    )
+
+            if not livros_filtrados:
+
+                lista_livros.controls.append(
+                    ft.Text(
+                        "Nenhum livro encontrado.",
+                        color=ft.Colors.GREY
+                    )
+                )
+
+            for livro, prateleira in livros_filtrados:
+
+                async def on_delete_livro(e, lid=livro["id"]):
+                    await deletar_livro(lid)
+
+                async def on_add(e, lid=livro["id"]):
+                    await aumentar_quantidade(lid)
+
+                async def on_remove(e, lid=livro["id"]):
+                    await diminuir_quantidade(lid)
+
+                emprestimos_abertos = livro_esta_emprestado(
+                    livro["id"],
+                    dados
+                )
+
+                quantidade = livro.get("quantidade", 1)
+
+                emprestado = (
+                    emprestimos_abertos >= quantidade
+                )
+
+                lista_livros.controls.append(
+
+                    ft.ListTile(
+
+                        title=ft.Text(
+                            livro["titulo"],
+                            weight="bold"
+                        ),
+
+                        subtitle=ft.Column([
+                            ft.Text(
+                                f"Autor: {livro['autor']}",
+                                size=12
+                            ),
+
+                            ft.Text(
+                                f"Prateleira: {prateleira['nome'] if prateleira else 'Sem prateleira'}",
+                                size=12
+                            ),
+
+                        ], spacing=2),
+
+                        trailing=ft.Row([
+
+                            ft.Text(
+                                f"Qty: {quantidade} (Disp: {quantidade - emprestimos_abertos})",
+                                size=12
+                            ),
+
+                            ft.Text(
+                                "Disponível"
+                                if emprestimos_abertos < quantidade
+                                else "Emprestado",
+
+                                color=(
+                                    ft.Colors.GREEN
+                                    if emprestimos_abertos < quantidade
+                                    else ft.Colors.RED
+                                )
+                            ),
+
+                            criar_botao_primario(
+                                "",
+                                ft.Icons.ADD,
+                                on_add,
+                                bgcolor=ft.Colors.BLUE
+                            ),
+
+                            criar_botao_primario(
+                                "",
+                                ft.Icons.REMOVE,
+                                on_remove,
+                                bgcolor=ft.Colors.GREY
+                            ),
+
+                            criar_botao_primario(
+                                "",
+                                ft.Icons.EDIT,
+                                lambda e, lid=livro["id"]: editar_livro(lid),
+                                bgcolor=ft.Colors.BLUE
+                            ),
+
+                            criar_botao_primario(
+                                "",
+                                ft.Icons.DELETE,
+                                on_delete_livro,
+                                bgcolor=ft.Colors.RED
+                            ) if not emprestado else ft.Container(),
+
+                        ], spacing=5, tight=True),
+                    )
+                )
+
+            page.update()
+
+        atualizar_lista_livros()
 
         lista = ft.Column([
             criar_layout_form([
@@ -196,6 +315,7 @@ def view_livros(page, dados, estado, route_change):
             ], estado["mobile"],spacing=10),
             ft.Divider(),
             ft.Text("Livros cadastrados", weight="bold"),
-            *linhas,
+            campo_pesquisa,
+            lista_livros,
         ], spacing=12)
         return ft.ListView([lista], expand=True, padding=20, spacing=20)
