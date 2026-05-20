@@ -126,6 +126,20 @@ def view_emprestimos(page, dados, estado, route_change, navegar):
                 
                 await salvar_e_atualizar(page, dados, route_change, atualizar_dropdown_emprestimo,"Devolução registrada com sucesso.")
 
+        async def limpar_historico_emprestimos(e):
+            dados["emprestimos"][:] = [
+                emp for emp in dados["emprestimos"]
+                if emp["status"] != "Entregue"
+            ]
+
+            await salvar_e_atualizar(
+                page,
+                dados,
+                route_change,
+                atualizar_dropdown_emprestimo,
+                "Histórico de empréstimos concluídos removido."
+            )
+
         linhas = []
         for emprestimo in dados["emprestimos"]:
             cliente = obter_por_id(dados["clientes"], emprestimo["cliente_id"])
@@ -154,6 +168,12 @@ def view_emprestimos(page, dados, estado, route_change, navegar):
                 emprestimo_livro,
                 criar_botao_primario("Cadastrar", ft.Icons.ADD, cadastrar_emprestimo, bgcolor=ft.Colors.GREEN),
             ], estado["mobile"], spacing=10),
+            criar_botao_secundario(
+                "Limpar Histórico",
+                ft.Icons.DELETE_SWEEP,
+                limpar_historico_emprestimos,
+                color=ft.Colors.RED,
+            ),
             ft.Divider(),
             ft.Text("Empréstimos", weight="bold"),
             *linhas,

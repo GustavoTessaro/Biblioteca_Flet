@@ -1,5 +1,3 @@
-ajustar os botoes se ficam disable ou nao em prateleiras e livros, e ajustar tambem a cor quando fica habilitado ou não
-
 verificar validações de @email certo, de telefone certo
 
 adicionar botão limpar lista de emprestimo e multas

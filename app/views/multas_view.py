@@ -14,6 +14,20 @@ def view_multas(page, dados, estado, route_change):
                 multa["status"] = "Pago"
                 await salvar_e_atualizar(page, dados, route_change, None, "Multa marcada como paga.")
 
+        async def limpar_multas_pagas(e):
+            dados["multas"][:] = [
+                multa for multa in dados["multas"]
+                if multa["status"] != "Pago"
+            ]
+
+            await salvar_e_atualizar(
+                page,
+                dados,
+                route_change,
+                None,
+                "Histórico de multas pagas removido."
+            )
+
         linhas = []
         for multa in dados["multas"]:
             cliente = obter_por_id(dados["clientes"], multa["cliente_id"])
@@ -35,6 +49,12 @@ def view_multas(page, dados, estado, route_change):
             ft.Column(
                 [
                     ft.Text("Multas geradas", weight="bold", size=16),
+                    criar_botao_secundario(
+                        "Limpar Histórico",
+                        ft.Icons.DELETE_SWEEP,
+                        limpar_multas_pagas,
+                        color=ft.Colors.RED,
+                    ),
                     ft.Divider(),
                 ] + (linhas if linhas else [ft.Text("Nenhuma multa pendente.", color=ft.Colors.GREY)]),
                 spacing=12
