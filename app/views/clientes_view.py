@@ -32,7 +32,9 @@ def view_clientes(page, dados, estado, route_change):
         
         def atualizar_estado_botoes():
             btn_cadastrar.disabled = bool(estado.get("cliente_edit_id"))
+            btn_cadastrar.bgcolor = ft.Colors.GREEN if not estado.get("cliente_edit_id") else ft.Colors.GREY
             btn_salvar.disabled = not bool(estado.get("cliente_edit_id"))
+            btn_salvar.bgcolor = ft.Colors.ORANGE if estado.get("cliente_edit_id") else ft.Colors.GREY
 
         if estado["cliente_edit_id"] and not obter_por_id(dados["clientes"], estado["cliente_edit_id"]):
             limpar_form_cliente()
@@ -149,7 +151,7 @@ def view_clientes(page, dados, estado, route_change):
             ], estado["mobile"], spacing=10),
             criar_layout_form([
                 btn_salvar,
-                criar_botao_secundario("Cancelar", ft.Icons.CANCEL, cancelar_edit, color=ft.Colors.GREY),
+                criar_botao_secundario("Cancelar", ft.Icons.CANCEL, cancelar_edit, color=ft.Colors.RED),
             ], estado["mobile"], spacing=10),
             ft.Divider(),
             ft.Text("Clientes cadastrados", weight="bold"),

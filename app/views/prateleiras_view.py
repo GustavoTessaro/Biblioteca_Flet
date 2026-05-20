@@ -29,9 +29,16 @@ def view_prateleiras(page, dados, estado, route_change):
             prateleira_dias.value = ""
             prateleira_multa.value = ""
             estado["prateleira_edit_id"] = None
+            atualizar_estado_botoes()
         
         if estado["prateleira_edit_id"] and not obter_por_id(dados["prateleiras"], estado["prateleira_edit_id"]):
             limpar_form_prateleira()
+            
+        def atualizar_estado_botoes():
+            btn_cadastrar.disabled = bool(estado.get("prateleira_edit_id"))
+            btn_cadastrar.bgcolor = (ft.Colors.GREEN if not estado.get("prateleira_edit_id")else ft.Colors.GREY)
+            btn_salvar.disabled = not bool(estado.get("prateleira_edit_id"))
+            btn_salvar.bgcolor = (ft.Colors.ORANGE if estado.get("prateleira_edit_id") else ft.Colors.GREY)
 
         async def adicionar_prateleira(e):
             nome = prateleira_nome.value.strip()
@@ -67,6 +74,7 @@ def view_prateleiras(page, dados, estado, route_change):
             prateleira_dias.value = str(prateleira["dias_e_prazo"])
             prateleira_multa.value = str(prateleira["multa_por_dia"])
             estado["prateleira_edit_id"] = prateleira_id
+            atualizar_estado_botoes()
             page.update()
 
         async def salvar_prateleira_edit(e):
@@ -112,10 +120,21 @@ def view_prateleiras(page, dados, estado, route_change):
             page.update()
 
         btn_salvar = criar_botao_primario(
-            "Salvar",
+            "Editar",
             ft.Icons.SAVE,
             salvar_prateleira_edit,
-            bgcolor=ft.Colors.ORANGE if estado["prateleira_edit_id"] else ft.Colors.GREY
+            bgcolor=ft.Colors.ORANGE if estado.get("prateleira_edit_id") else ft.Colors.GREY,
+            expand=False,
+            disabled=not bool(estado.get("prateleira_edit_id"))
+        )
+        
+        btn_cadastrar = criar_botao_primario(
+            "Cadastrar",
+            ft.Icons.ADD,
+            adicionar_prateleira,
+            bgcolor=ft.Colors.GREEN,
+            expand=False,
+            disabled=bool(estado.get("prateleira_edit_id"))
         )
 
         linhas = []
@@ -142,11 +161,11 @@ def view_prateleiras(page, dados, estado, route_change):
                 prateleira_nome,
                 prateleira_dias,
                 prateleira_multa,
-                criar_botao_primario("Cadastrar", ft.Icons.ADD, adicionar_prateleira, bgcolor=ft.Colors.GREEN),
+                btn_cadastrar,
             ], estado["mobile"], spacing=10),
             criar_layout_form([
                 btn_salvar,
-                criar_botao_secundario("Cancelar", ft.Icons.CANCEL, cancelar_edit, color=ft.Colors.GREY),
+                criar_botao_secundario("Cancelar", ft.Icons.CANCEL, cancelar_edit, color=ft.Colors.RED),
             ],estado["mobile"], spacing=10),
             ft.Divider(),
             ft.Text("Prateleiras cadastradas", weight="bold"),

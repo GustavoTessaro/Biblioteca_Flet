@@ -46,9 +46,16 @@ def view_livros(page, dados, estado, route_change):
             livro_autor.value = ""
             livro_prateleira.value = None
             estado["livro_edit_id"] = None
+            atualizar_estado_botoes()
         
         if estado["livro_edit_id"] and not obter_por_id(dados["livros"], estado["livro_edit_id"]):
             limpar_form_livro()
+
+        def atualizar_estado_botoes():
+            btn_cadastrar.disabled = bool(estado.get("livro_edit_id"))
+            btn_cadastrar.bgcolor = (ft.Colors.GREEN if not estado.get("livro_edit_id") else ft.Colors.GREY)
+            btn_salvar.disabled = not bool(estado.get("livro_edit_id"))
+            btn_salvar.bgcolor = (ft.Colors.ORANGE if estado.get("livro_edit_id") else ft.Colors.GREY)
 
         async def adicionar_livro(e):
             titulo = livro_titulo.value.strip()
@@ -81,6 +88,7 @@ def view_livros(page, dados, estado, route_change):
             livro_autor.value = livro["autor"]
             livro_prateleira.value = str(livro["prateleira_id"])
             estado["livro_edit_id"] = livro_id
+            atualizar_estado_botoes()
             page.update()
 
         async def salvar_livro_edit(e):
@@ -137,9 +145,13 @@ def view_livros(page, dados, estado, route_change):
         btn_salvar = criar_botao_primario(
             "Editar",
             ft.Icons.SAVE,
-            salvar_livro_edit if estado["livro_edit_id"] else None,
-            bgcolor=ft.Colors.ORANGE if estado["livro_edit_id"] else ft.Colors.GREY
+            salvar_livro_edit,
+            bgcolor=ft.Colors.ORANGE if estado.get("livro_edit_id") else ft.Colors.GREY,
+            expand=False,
+            disabled=not bool(estado.get("livro_edit_id"))
         )
+        
+        btn_cadastrar = criar_botao_primario("Cadastrar", ft.Icons.ADD, adicionar_livro, bgcolor=ft.Colors.GREEN, expand=False, disabled=bool(estado.get("livro_edit_id")))
 
         linhas = []
         for livro in dados["livros"]:
@@ -176,11 +188,11 @@ def view_livros(page, dados, estado, route_change):
                 livro_titulo,
                 livro_autor,
                 livro_prateleira,
-                criar_botao_primario("Cadastrar", ft.Icons.ADD, adicionar_livro, bgcolor=ft.Colors.GREEN),
+                btn_cadastrar,
             ], estado["mobile"], spacing=10),
             criar_layout_form([
                 btn_salvar,
-                criar_botao_secundario("Cancelar", ft.Icons.CANCEL, cancelar_edit, color=ft.Colors.GREY),
+                criar_botao_secundario("Cancelar", ft.Icons.CANCEL, cancelar_edit, color=ft.Colors.RED),
             ], estado["mobile"],spacing=10),
             ft.Divider(),
             ft.Text("Livros cadastrados", weight="bold"),
