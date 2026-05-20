@@ -1,3 +1,0 @@
-tentar ver se tem como campos de selecionar conseguir pesquisar tembem, Em livros selecionar prateleira e em emprestimos selecionar cliente e livro
-
-Fazer README
