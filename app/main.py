@@ -6,7 +6,6 @@ import flet as ft
 
 from core.constants import *
 from core.helpers import *
-from core.theme import paleta
 
 # =========================
 # DATA
@@ -18,19 +17,13 @@ from data.storage import carregar_dados, salvar_dados
 # SERVICES
 # =========================
 
-from services.cliente_service import cliente_existe, cliente_tem_emprestimos_ativos
-from services.emprestimo_service import verificar_atrasos_e_multas, obter_status_emprestimo
-from services.livro_service import livro_esta_emprestado, obter_livro_por_atributos
-from services.multa_service import calcular_valor_multa
-from services.prateleira_service import prateleira_existe
+from services.emprestimo_service import verificar_atrasos_e_multas
 
 # =========================
 # COMPONENTS
 # =========================
 
 from components.appbar import construir_appbar
-from components.buttons import (criar_botao_primario,criar_botao_secundario)
-from components.cards import criar_card
 from components.menu import menu_lateral
 from components.navigation import navigation_bar_mobile
 
