@@ -9,7 +9,6 @@ def view_home(dados):
         total_clientes = len(dados["clientes"])
         total_prateleiras = len(dados["prateleiras"])
         total_livros = len(dados["livros"])
-        total_emprestimos = len(dados["emprestimos"])
         total_abertos = sum(1 for e in dados["emprestimos"] if e["status"] == "Aberto")
         total_atrasados = sum(1 for e in dados["emprestimos"] if e["status"] == "Atrasado")
         total_multas = sum(1 for m in dados["multas"] if m["status"] == "Pendente")

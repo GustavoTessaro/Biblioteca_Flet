@@ -141,7 +141,6 @@ def view_livros(page, dados, estado, route_change):
             limpar_form_livro()
             page.update()
 
-        # Otimização: O botão de salvar só ativa a função se houver algo sendo editado
         btn_salvar = criar_botao_primario(
             "Editar",
             ft.Icons.SAVE,

@@ -100,7 +100,6 @@ def view_emprestimos(page, dados, estado, route_change, navegar):
                         ft.TextButton("Sim (Finalizar Devolução)", on_click=confirmar_devolucao),
                     ],
                 )
-                # ── CORREÇÃO 1: Adiciona o diálogo no overlay de forma moderna
                 page.dialog = dlg
                 dlg.open = True
                 page.update()
@@ -108,7 +107,7 @@ def view_emprestimos(page, dados, estado, route_change, navegar):
                 await finalizar_devolucao(None, emprestimo_id, None, None)
 
         def fechar_e_ir_para_multas(dlg):
-            dlg.open = False  # Fecha o aviso antes de mudar de tela
+            dlg.open = False 
             page.update()
             navegar("/multas")
 
@@ -119,7 +118,6 @@ def view_emprestimos(page, dados, estado, route_change, navegar):
                 if multa_paga:
                     multa_paga["status"] = "Pago"
                 
-                # ── CORREÇÃO 2: Se houver um diálogo aberto, fecha ele aqui
                 if dlg:
                     dlg.open = False
                     page.update()
