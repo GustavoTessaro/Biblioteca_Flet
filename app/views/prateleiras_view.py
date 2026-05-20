@@ -136,25 +136,98 @@ def view_prateleiras(page, dados, estado, route_change):
             expand=False,
             disabled=bool(estado.get("prateleira_edit_id"))
         )
+        
+        campo_pesquisa = ft.TextField(
+            label="Pesquisar prateleiras",
+            prefix_icon=ft.Icons.SEARCH,
+            on_change=lambda e: atualizar_lista_prateleiras(),
+        )
 
-        linhas = []
-        for prateleira in dados["prateleiras"]:
-            async def on_delete_prateleira(e, pid=prateleira["id"]):
-                await deletar_prateleira(pid)
-            linhas.append(
-                ft.ListTile(
-                    title=ft.Text(prateleira["nome"], weight="bold"),
-                    subtitle=ft.Text(
-                        f"Prazo: {prateleira['dias_e_prazo']} dias · Multa/dia: R${prateleira['multa_por_dia']:.2f}",
-                        size=12,
-                    ),
-                    trailing=ft.Row([
-                        criar_botao_primario("", ft.Icons.EDIT, lambda e, pid=prateleira["id"]: editar_prateleira(pid), bgcolor=ft.Colors.BLUE),
-                        criar_botao_primario("", ft.Icons.DELETE, on_delete_prateleira, bgcolor=ft.Colors.RED),
-                    ], spacing=5, tight=True),
-                    min_vertical_padding=8,
+        lista_prateleiras = ft.Column(spacing=10)
+
+        def atualizar_lista_prateleiras():
+
+            texto = campo_pesquisa.value.lower().strip()
+
+            lista_prateleiras.controls.clear()
+
+            prateleiras_filtradas = []
+
+            for prateleira in dados["prateleiras"]:
+
+                nome = prateleira["nome"].lower()
+
+                dias = str(prateleira["dias_e_prazo"])
+
+                multa = str(prateleira["multa_por_dia"])
+
+                if (
+                    texto == ""
+                    or texto in nome
+                    or texto in dias
+                    or texto in multa
+                ):
+                    prateleiras_filtradas.append(prateleira)
+
+            if not prateleiras_filtradas:
+
+                lista_prateleiras.controls.append(
+                    ft.Text(
+                        "Nenhuma prateleira encontrada.",
+                        color=ft.Colors.GREY
+                    )
                 )
-            )
+
+            for prateleira in prateleiras_filtradas:
+
+                async def on_delete_prateleira(
+                    e,
+                    pid=prateleira["id"]
+                ):
+                    await deletar_prateleira(pid)
+
+                lista_prateleiras.controls.append(
+                    ft.ListTile(
+                        title=ft.Text(
+                            prateleira["nome"],
+                            weight="bold"
+                        ),
+
+                        subtitle=ft.Text(
+                            (
+                                f"Prazo: "
+                                f"{prateleira['dias_e_prazo']} dias "
+                                f"· Multa/dia: "
+                                f"R${prateleira['multa_por_dia']:.2f}"
+                            ),
+                            size=12,
+                        ),
+
+                        trailing=ft.Row([
+                            criar_botao_primario(
+                                "",
+                                ft.Icons.EDIT,
+                                lambda e, pid=prateleira["id"]:
+                                    editar_prateleira(pid),
+                                bgcolor=ft.Colors.BLUE
+                            ),
+
+                            criar_botao_primario(
+                                "",
+                                ft.Icons.DELETE,
+                                on_delete_prateleira,
+                                bgcolor=ft.Colors.RED
+                            ),
+
+                        ], spacing=5, tight=True),
+
+                        min_vertical_padding=8,
+                    )
+                )
+
+            page.update()
+
+        atualizar_lista_prateleiras()
 
         lista = ft.Column([
             criar_layout_form([
@@ -169,6 +242,7 @@ def view_prateleiras(page, dados, estado, route_change):
             ],estado["mobile"], spacing=10),
             ft.Divider(),
             ft.Text("Prateleiras cadastradas", weight="bold"),
-            *linhas,
+            campo_pesquisa,
+            lista_prateleiras,
         ], spacing=12)
         return ft.ListView([lista], expand=True, padding=20, spacing=20)
