@@ -332,4 +332,3 @@ Este projeto foi desenvolvido com o objetivo de praticar:
 # 👨‍💻 Autor
 
 Desenvolvido por Gustavo Tessaro.
-
