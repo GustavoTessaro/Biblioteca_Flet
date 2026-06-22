@@ -17,3 +17,7 @@ dist/
 #JSON
 
 biblioteca_data.JSON
+
+#SQLite
+
+biblioteca.db
